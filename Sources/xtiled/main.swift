@@ -2,7 +2,7 @@
 //  main.swift
 //  Pelota
 //
-//  Created by Nigel Hughes on 11/05/2018.
+//  Created on 11/05/2018.
 //
 
 import Foundation

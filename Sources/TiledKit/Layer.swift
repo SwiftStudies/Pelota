@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 public class Layer : Decodable, Propertied{
     let name    : String

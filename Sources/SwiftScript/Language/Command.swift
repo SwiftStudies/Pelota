@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 struct Command : Decodable {
     let sendMessage : Message

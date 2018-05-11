@@ -7,13 +7,7 @@
 //
 
 import Foundation
-
-public func require<T>(_ optional:T?,or message:String)->T{
-    if let unwrapped = optional {
-        return unwrapped
-    }
-    guruMeditation(message)
-}
+import Pelota
 
 public protocol CustomObject {
     static var identifier : String { get }

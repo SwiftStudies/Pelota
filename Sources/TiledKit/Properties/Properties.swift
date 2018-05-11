@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 fileprivate enum PropertyJSONKeys : String, CodingKey {
     case types = "propertytypes", values = "properties"
@@ -33,61 +34,6 @@ fileprivate enum PropertyType : String, Decodable {
     case string, bool, int, float, file, color
 }
 
-public enum Literal : Equatable, CustomStringConvertible{
-    public static func == (lhs: Literal, rhs: Literal) -> Bool {
-        switch lhs {
-        case string(let lhsValue):
-            if let rhsValue = String(rhs), lhsValue == rhsValue {
-                return true
-            }
-        case bool(let lhsValue):
-            if let rhsValue = Bool(rhs), lhsValue == rhsValue {
-                return true
-            }
-        case int(let lhsValue):
-            if let rhsValue = Int(rhs), lhsValue == rhsValue {
-                return true
-            }
-        case float(let lhsValue):
-            if let rhsValue = Float(rhs), lhsValue == rhsValue {
-                return true
-            }
-        case file(let lhsValue):
-            if let rhsValue = String(rhs), lhsValue == rhsValue {
-                return true
-            }
-        case color(let lhsValue):
-            if case .color(let rhsValue) = rhs {
-                return lhsValue == rhsValue
-            }
-        }
-        
-        return false
-    }
-    
-    public var description: String {
-        switch self {
-        case .string(let value), .file(let value):
-            return value
-        case .bool(let value):
-            return "\(value)"
-        case .int(let value):
-            return "\(value)"
-        case .float(let value):
-            return "\(value)"
-        case .color(let value):
-            return "\(value)"
-        }
-    }
-    
-    case string(value:String)
-    case bool(value:Bool)
-    case int(value:Int)
-    case float(value:Float)
-    case file(value:String)
-    case color(value:Color)
-}
-
 extension Decodable where Self : Propertied {
     func decode(from decoder:Decoder) throws -> [String : Literal] {
         var properties = [String:Literal]()
@@ -107,7 +53,8 @@ extension Decodable where Self : Propertied {
                 case .float:
                     properties[type.key] = Literal.float(value: try values.decode(Float.self, forKey: FlexibleCodingKey(stringValue: type.key)!))
                 case .file:
-                    properties[type.key] = Literal.string(value: try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!))
+                    let pathString = try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!)
+                    properties[type.key] = Literal.file(value: URL(fileURLWithPath: pathString))
                 case .color: //#AARRGGBB
                     properties[type.key] = Literal.color(value: Color(from: try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!)))
                 }

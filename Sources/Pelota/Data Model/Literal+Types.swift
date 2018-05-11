@@ -8,22 +8,13 @@
 
 import Foundation
 
-//public enum PropertyValue {
-//    case string(value:String)
-//    case bool(value:Bool)
-//    case int(value:Int)
-//    case float(value:Float)
-//    case file(value:String)
-//    case color(value:TiledColor)
-//}
-
 extension String {
     init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }
         switch value {
-        case .string(let value),.file(let value):
+        case .string(let value):
             self = value
         default:
             return nil
@@ -63,6 +54,19 @@ extension Float {
             return nil
         }
         if case Literal.float(let actualValue) = value {
+            self = actualValue
+        } else {
+            return nil
+        }
+    }
+}
+
+extension URL {
+    init?(_ value:Literal?){
+        guard let value = value else {
+            return nil
+        }
+        if case Literal.file(let actualValue) = value {
             self = actualValue
         } else {
             return nil

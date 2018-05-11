@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 extension Literal : Decodable {
     enum CodingKeys : String, CodingKey {

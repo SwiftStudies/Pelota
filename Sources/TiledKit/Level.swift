@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 public protocol LevelLoader {
     func willLoadLayers(into level:Level)

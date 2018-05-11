@@ -8,6 +8,13 @@
 
 import Foundation
 
+public func require<T>(_ optional:T?,or message:String)->T{
+    if let unwrapped = optional {
+        return unwrapped
+    }
+    fatalError(message)
+}
+
 class SwiftScriptEngine : Runtime {
     fileprivate var stack           = [Scope]()
     fileprivate let debuggingMode   = false

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 enum LayerType : Decodable {
     case object, group, tile

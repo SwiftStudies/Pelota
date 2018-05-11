@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 protocol Symbol {
     var name : String {get}

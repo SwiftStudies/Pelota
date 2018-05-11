@@ -1,0 +1,46 @@
+// Whitespace
+ows                     = .whitespace*
+
+// Literals
+literal                 = boolean | string | real | integer | color
+
+//      Strings
+stringQuote             = "\""
+escapedCharacters       = stringQuote | "r" | "n" | "t" | "\\"
+escapedCharacter        = "\\" escapedCharacters
+@void stringCharacter   = escapedCharacter | !(stringQuote | .newline)
+stringBody              = stringCharacter*
+string                  = @transient stringQuote stringBody @error("Missing terminating quote") @transient stringQuote
+
+//      Numbers
+@transient hexDigit     = .decimalDigit | "A" | "B" | "C" | "D" | "E" | "F" | "a" | "b" | "c" | "d" | "e" | "f"
+byte                    = hexDigit hexDigit
+sign                    = ("+" | "-")
+integer                 = sign? .decimalDigit+
+real                    = sign? .decimalDigit+ "." .decimalDigit+
+
+//      Color
+color                   = "#" @token("red") byte @token("green") byte @token("blue") byte @token("alpha") byte?
+
+//      Boolean
+boolean                 = "true" | "false"
+
+// References
+identifier              = .letter (.letter | .decimalDigit)*
+reference               = identifier >>!"(" ("." identifier >>!"(")*
+
+// Term
+term                    = literal | reference
+
+// Parameters
+parameter               = identifier @transient ows ":" @transient ows term
+parameters              = parameter (@transient ows "," @transient ows parameter)*
+
+// Message
+message                 = @transient identifier
+sendMessage             = (reference ".")? @error("Expected message's name") message @error("Expected ( at start of message send") "(" @transient ows parameters? @transient ows ")"
+
+// Script
+command                 = sendMessage
+script                  = command (.newline+ command)*
+

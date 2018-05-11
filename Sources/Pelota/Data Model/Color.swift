@@ -12,7 +12,7 @@ public struct Color : Decodable, Equatable{
     let red:Byte, green:Byte, blue:Byte, alpha:Byte
     
     //Tiled represents colors in the form of a string #AARRGGBB
-    init(from string:String){
+    public init(from string:String){
         if string.count == 7 {
             alpha = 255
             red   = Byte(string[1..<3], radix: 16) ?? 255

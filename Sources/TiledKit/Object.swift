@@ -125,7 +125,7 @@ class EllipseObject : RectangleObject {
     }
 }
 
-class TileObject : RectangleObject {
+class TileObject: RectangleObject {
     private enum CodingKeys : String, CodingKey {
         case gid, tile
     }

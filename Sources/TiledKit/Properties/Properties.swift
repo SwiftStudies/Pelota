@@ -56,7 +56,9 @@ extension Decodable where Self : Propertied {
                     let pathString = try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!)
                     properties[type.key] = Literal.file(value: URL(fileURLWithPath: pathString))
                 case .color: //#AARRGGBB
-                    properties[type.key] = Literal.color(value: Color(from: try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!)))
+                    let stringValue = try values.decode(String.self, forKey: FlexibleCodingKey(stringValue: type.key)!)
+                    let color = Color(from: stringValue)
+                    properties[type.key] = Literal.color(value: color)
                 }
             }
         }

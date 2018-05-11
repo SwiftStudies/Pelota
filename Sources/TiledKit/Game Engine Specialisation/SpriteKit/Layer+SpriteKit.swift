@@ -27,7 +27,7 @@ extension TileLayer{
                 let spriteNode = SKSpriteNode(texture: allTextures[texture])
                 spriteNode.position = CGPoint(x:(x*level.tileWidth+offset.x) - pixelWidth >> 1, y:(-y*level.tileHeight-offset.y) + pixelHeight >> 1)
                 spriteNode.position.x += spriteNode.size.width / 2
-                spriteNode.position.y += (spriteNode.size.height / 2) - level.tileHeight.cgFloat
+                spriteNode.position.y += (spriteNode.size.height / 2) - CGFloat(level.tileHeight)
                 node.addChild(spriteNode)
             }
         }

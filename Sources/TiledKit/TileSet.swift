@@ -35,7 +35,7 @@ struct TileSet : Decodable {
         case tileHeight = "tileheight"
     }
     
-    class Tile : Decodable, LayerContainer {
+    class Tile: Decodable, LayerContainer {
         var parent: LayerContainer {
             return self
         }
@@ -47,8 +47,7 @@ struct TileSet : Decodable {
             return []
         }
         
-        let bitmap  : Bitmap
-        let texture : SKTexture
+        let path    : String
         let objects : ObjectLayer?
         var tileSet : TileSet? = nil
         
@@ -59,22 +58,9 @@ struct TileSet : Decodable {
         required init(from decoder: Decoder) throws{
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
-            var fileName = NSString(string:try container.decode(String.self, forKey: CodingKeys.image)).lastPathComponent
+            path = try container.decode(String.self, forKey: CodingKeys.image)
             
-            fileName = String(fileName[..<(fileName.index(of: ".") ?? fileName.endIndex)])
-            
-            assert(Thread.current.isMainThread, "Attempting to load image off the main thread")
-
-            var mainTexture : SKTexture!
-            var mainBitmap : Bitmap!
-            
-            mainTexture = SKTexture(retro: fileName)
-            mainBitmap = Bitmap(texture: mainTexture)
-            
-            self.bitmap = mainBitmap
-            self.texture = mainTexture
-            
-            objects = try container.decodeIfPresent(ObjectLayer.self, forKey: .objects)            
+            objects = try container.decodeIfPresent(ObjectLayer.self, forKey: .objects)
         }
     }
     

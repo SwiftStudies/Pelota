@@ -21,7 +21,8 @@ public struct TiledLevel<T:Texture>{
     mutating func cacheTextures(){
         var textures = TextureCache<T>()
         for tile in level.tiles {
-            textures[tile.key] = T.cache(from: tile.value.path) 
+            //TODO: Should not have to do this cast but see the issue documented on ```Texture``` protocol declaration
+            textures[tile.key] = (T.cache(from: tile.value.path) as! T)
         }
         self.textures = textures
     }

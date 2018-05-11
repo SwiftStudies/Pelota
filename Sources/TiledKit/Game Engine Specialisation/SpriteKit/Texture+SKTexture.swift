@@ -7,7 +7,7 @@
 import SpriteKit
 
 extension SKTexture : Texture {
-    public static func cache(from path: String) -> SKTexture {
+    public static func cache(from path: String) -> Texture {
         let url = URL(fileURLWithPath: path)
         
         return SKTexture(imageNamed: url.lastPathComponent)

@@ -8,21 +8,13 @@
 
 import Foundation
 
-struct Message : Decodable{
+public struct Message : Decodable{
     fileprivate enum CodingKeys : String, CodingKey {
-        case name = "message", target = "reference", _parameters = "parameters"
+        case name = "message", target = "reference", parameters = "parameters"
     }
     
     let name    : String
     let target  : KeyPath
-    let _parameters : [Parameter]?
-    
-    func send(in runTime:Runtime){
-        runTime.send(message: name, parameters, to: target)
-    }
-    
-    var parameters : [Symbol]{
-        
-        return (_parameters ?? []).map({$0.type.instance(identifier: $0.name)})
-    }
+    let parameters : [Parameter]?
+    var runTime : Runtime? = nil
 }

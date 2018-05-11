@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 // Convert an array of symbols into a symbol table
 fileprivate extension Array where Element == Symbol {

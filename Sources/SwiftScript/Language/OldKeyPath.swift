@@ -9,9 +9,9 @@
 import Foundation
 
 //This is probably what a keypath really is
-typealias KeyPath = [String]
+public typealias KeyPath = [String]
 
-struct OldKeyPath {
+public struct OldKeyPath {
     let object   : String?
     let property : String
     

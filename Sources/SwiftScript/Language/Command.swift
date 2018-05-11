@@ -13,7 +13,7 @@ public struct Command : Decodable {
     let sendMessage : Message
     
     func execute(in runTime:Runtime){
-        sendMessage.send(in:runTime)
+        runTime.send(message: sendMessage)
     }
 }
 

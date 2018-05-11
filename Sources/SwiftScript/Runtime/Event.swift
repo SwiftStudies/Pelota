@@ -7,19 +7,21 @@
 //
 
 import Foundation
+import Pelota
 
-struct EventMask {
+public struct EventMask {
     let desiredName : String
     let desiredSource : String?
     let desiredProperties : [String:Term]?
 }
 
-struct Event : KeyedType{
+public struct Event : KeyedType{
     let name   : String
     let source : String
     let data   : KeyedType
+    let runTime : Runtime
     
-    subscript(key key:String)->ScriptType? {
+    public subscript(key key:String)->ScriptType? {
         switch key {
         case "name":
             return Literal.string(value: name)
@@ -49,7 +51,7 @@ struct Event : KeyedType{
                 return false
             }
             
-            if property.value != runTime?.resolve(term: term).value {
+            if property.value != runTime.resolve(term: term).value {
                 return false
             }
         }

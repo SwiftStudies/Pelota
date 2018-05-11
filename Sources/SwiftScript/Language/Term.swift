@@ -9,7 +9,7 @@
 import Foundation
 import Pelota
 
-enum Term : Decodable {
+public enum Term : Decodable {
     fileprivate enum CodingKeys : String, CodingKey {
         case literal, reference
     }

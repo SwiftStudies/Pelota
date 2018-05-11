@@ -12,6 +12,7 @@ import Pelota
 public protocol Symbol {
     var name : String {get}
     var type : ScriptType {get}
+    var runTime : Runtime? {get}
 }
 
 extension Array where Element == Symbol {
@@ -78,22 +79,6 @@ public protocol DispatchingType : ScriptType {
 }
 
 public protocol ObjectType : KeyedType, DispatchingType {
-}
-
-public extension ScriptType {
-    public func instance(identifier:String)->Symbol{
-        return Instance(identifier, type: self)
-    }
-}
-
-fileprivate struct Instance : Symbol {
-    let name   : String
-    let type   : ScriptType
-    
-    init(_ name:String, type:ScriptType){
-        self.name = name
-        self.type = type
-    }
 }
 
 extension Dictionary : KeyedType, ScriptType where Key == String, Value == ScriptType {

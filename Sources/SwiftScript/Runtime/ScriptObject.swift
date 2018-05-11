@@ -8,6 +8,6 @@
 
 import Foundation
 
-protocol Subscriber : Symbol, ScriptType{
+public protocol Subscriber : Symbol, ScriptType{
     func respond(to event:Event)
 }

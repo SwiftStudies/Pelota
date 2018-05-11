@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 enum Term : Decodable {
     fileprivate enum CodingKeys : String, CodingKey {

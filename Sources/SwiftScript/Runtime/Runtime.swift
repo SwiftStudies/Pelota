@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol Runtime {
+public protocol Runtime {
     func pop()
     func push(identifier:String, for this:ScriptType?, with symbols:[Symbol])
 
@@ -22,12 +22,27 @@ protocol Runtime {
     func dumpStack()
 }
 
-extension Runtime {
+public typealias ExecutionContext = (scopeIdentifer:String, this:ScriptType?, scopedInstances:[Symbol])
+
+public extension Runtime {
     func send(message name:String,_ parameters:[Symbol], to target:KeyPath){
         let targetInstance = require(resolve(keyPath: target), or: "Could not resolve \(target)")
  
-        targetInstance.dispatch(message: name, with: parameters)
+        dispatch(message: name, to:targetInstance, with: parameters)
      }
+    
+    func execute(compiledScript script:CompiledScript, in context:ExecutionContext?){
+        if let context = context {
+            push(identifier: context.scopeIdentifer, for: context.this, with: context.scopedInstances)
+            defer {
+                pop()
+            }
+        }
+        for command in script {
+            command.execute(in:self)
+        }
+        
+    }
 }
 
 

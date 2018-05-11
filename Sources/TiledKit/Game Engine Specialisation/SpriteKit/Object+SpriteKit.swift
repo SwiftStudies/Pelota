@@ -27,7 +27,7 @@ extension Object {
             return CGRect(x: CGFloat(x), y: CGFloat(y), width: 4, height: 4)
         }
     }
-    func physicsBody(offsetBy offset:CGPoint = CGPoint.zero) ->SKPhysicsBody {
+    func physicsBody(offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture) ->SKPhysicsBody {
         var body : SKPhysicsBody? = nil
         if let object = self as? EllipseObject {
             if object.width == object.height {
@@ -41,7 +41,6 @@ extension Object {
         } else if let object = self as? PolylineObject {
             body = SKPhysicsBody(edgeChainFrom: object.points.cgPath)
         } else if let object = self as? TileObject,let collisionDefinition = object.tile?.objects?.objects.first {
-            let tile = require(object.tile, or: "A tile object has to have a tile actually loaded")
             //For any other object we use a node to move the physics body to the correct location, within a tile sprite
             //the body needs to be moved for those that are created in the absence of a co-ordinate system (i.e. typically just width and height
             //then shifted by a center
@@ -52,8 +51,8 @@ extension Object {
             } else {
                 fatalError("Tile based collision objects do not yet support \(collisionDefinition) objects")
             }
-            let offset = CGPoint(x: (tile.bitmap.width.cgFloat / -2) + collisionObjectOffset.x, y: tile.bitmap.height.cgFloat / -2 + collisionObjectOffset.y)
-            return collisionDefinition.physicsBody(offsetBy: offset)
+            let offset = CGPoint(x: (tileTexture.size().width / -2) + collisionObjectOffset.x, y: tileTexture.size().height / -2 + collisionObjectOffset.y)
+            return collisionDefinition.physicsBody(offsetBy: offset, tileTexture: tileTexture)
         } else if let object = self as? RectangleObject {
             let size = CGSize(width: Int(object.width), height: Int(object.height))
             body = SKPhysicsBody(rectangleOf: size, center: offset)

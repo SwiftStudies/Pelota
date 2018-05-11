@@ -9,26 +9,12 @@
 import Foundation
 import Pelota
 
-struct Command : Decodable {
+public struct Command : Decodable {
     let sendMessage : Message
     
-    func execute(by scriptable:ScriptType? = nil){
-        if let scriptable = scriptable {
-            runTime?.push(identifier: "\(type(of:scriptable)).executeCommand", for: scriptable, with: [])
-            defer {
-                runTime?.pop()
-            }
-        }
-        sendMessage.send()
+    func execute(in runTime:Runtime){
+        sendMessage.send(in:runTime)
     }
 }
 
-typealias CompiledScript = [Command]
-
-extension Array where Element == Command {
-    func execute(){
-        for command in self {
-            command.execute()
-        }
-    }
-}
+public typealias CompiledScript = [Command]

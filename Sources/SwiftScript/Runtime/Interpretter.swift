@@ -9,14 +9,14 @@
 import Foundation
 import OysterKit
 
-enum Interpretter {
+public enum Interpretter {
 
     static func parse(parameters:String?) throws ->[String:Term]{
         guard let parameters = parameters?.replacingOccurrences(of: "=", with: ":") else {
             return [:]
         }
         
-        let parser = Parser(grammar: [ScriptGrammar.parameters._rule()])
+        let parser = Parser(grammar: [SwiftScript.parameters._rule()])
         
         // Process their input
         do {
@@ -32,10 +32,10 @@ enum Interpretter {
         }
     }
     
-    static func compile(source:String)->[Command] {
+    public static func compile(source:String)->CompiledScript {
         // Process their input
         do {
-            let commands = try ParsingDecoder().decode([Command].self, from: source, using: ScriptGrammar.generatedLanguage)
+            let commands = try ParsingDecoder().decode([Command].self, from: source, using: SwiftScript.generatedLanguage)
             
             return commands
         } catch {

@@ -9,11 +9,13 @@
 import SpriteKit
 
 extension TileLayer{
-    func createNode(for level:Level)->SKNode{
+    func createNode(for level:SKLevel)->SKNode{
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight
         
-        let allTextures = level.allTextures
+        guard let allTextures = level.textures else {
+            fatalError("No textures have been cached")
+        }
         
         let node = SKNode()
         

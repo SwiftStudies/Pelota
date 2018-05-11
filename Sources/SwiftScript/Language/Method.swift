@@ -9,7 +9,7 @@
 import Foundation
 import Pelota
 
-protocol Symbol {
+public protocol Symbol {
     var name : String {get}
     var type : ScriptType {get}
 }
@@ -26,16 +26,16 @@ extension Array where Element == Symbol {
     }
 }
 
-protocol ScriptType {
+public protocol ScriptType {
     
 }
 
-protocol ValueType : ScriptType {
+public protocol ValueType : ScriptType {
     var value : Literal {get}
 }
 
 extension Literal : ValueType {
-    var value : Literal {
+    public var value : Literal {
         return self
     }
 }
@@ -57,41 +57,36 @@ extension ScriptType {
         return require(valueType, or: "\(type(of:self)) is not a value type").value
     }
     
-    func dispatch(message:String, with parameters:[Symbol]){
-        let dispatcher = require(self.dispatchType, or: "\(self) is not dispatching")
-        
-        runTime?.push(identifier:"\(type(of:dispatcher)).\(message)", for: self, with: parameters)
-        defer {
-            runTime?.pop()
-        }
-        
-        let method : Method = require(dispatcher[dispatch: message],or: "\(self) does not respond to \(message)")
-        method()
-    }
 
 }
 
-protocol Constant : ValueType {
+public protocol Constant : ValueType {
 }
 
-protocol Variable : ValueType {
+public protocol Variable : ValueType {
     var value : Literal {get set}
 }
 
-protocol KeyedType : ScriptType {
+public protocol KeyedType : ScriptType {
     subscript(key key:String)->ScriptType? {get}
 }
 
-typealias Method = ()->Void
+public typealias Method = ()->Void
 
-protocol DispatchingType : ScriptType {
+public protocol DispatchingType : ScriptType {
     subscript(dispatch dispatch:String)->Method? {get}
 }
 
-protocol ObjectType : KeyedType, DispatchingType {
+public protocol ObjectType : KeyedType, DispatchingType {
 }
 
-struct Instance : Symbol {
+public extension ScriptType {
+    public func instance(identifier:String)->Symbol{
+        return Instance(identifier, type: self)
+    }
+}
+
+fileprivate struct Instance : Symbol {
     let name   : String
     let type   : ScriptType
     
@@ -102,7 +97,7 @@ struct Instance : Symbol {
 }
 
 extension Dictionary : KeyedType, ScriptType where Key == String, Value == ScriptType {
-    subscript(key key:String)->ScriptType? {
+    public subscript(key key:String)->ScriptType? {
         return self[key]
     }
 }

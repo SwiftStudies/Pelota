@@ -43,6 +43,19 @@ class SwiftScriptEngine : Runtime {
         }
     }
     
+    func dispatch(message:String, to target:ScriptType, with parameters:[Symbol]){
+        let dispatcher = require(target.dispatchType, or: "\(self) is not dispatching")
+        
+        push(identifier:"\(type(of:dispatcher)).\(message)", for: self, with: parameters)
+        defer {
+            pop()
+        }
+        
+        let method : Method = require(dispatcher[dispatch: message],or: "\(self) does not respond to \(message)")
+        method()
+    }
+
+    
     func pop() {
         stack.removeLast()
     }

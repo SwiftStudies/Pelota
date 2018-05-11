@@ -17,11 +17,12 @@ struct Message : Decodable{
     let target  : KeyPath
     let _parameters : [Parameter]?
     
-    func send(){
-        runTime?.send(message: name, parameters, to: target)
+    func send(in runTime:Runtime){
+        runTime.send(message: name, parameters, to: target)
     }
     
     var parameters : [Symbol]{
-        return (_parameters ?? []).map({Instance.init($0.name, type: $0.type)})
+        
+        return (_parameters ?? []).map({$0.type.instance(identifier: $0.name)})
     }
 }

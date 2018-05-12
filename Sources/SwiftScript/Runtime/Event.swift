@@ -10,15 +10,15 @@ import Foundation
 import Pelota
 
 public struct EventMask {
-    let desiredName : String
-    let desiredSource : String?
-    let desiredProperties : [String:Term]?
+    public let desiredName : String
+    public let desiredSource : String?
+    public let desiredProperties : [String:Term]?
 }
 
 public struct Event : KeyedType{
-    let name   : String
-    let source : String
-    let data   : KeyedType
+    public let name   : String
+    public let source : String
+    public let data   : KeyedType
     let runTime : Runtime
     
     public subscript(key key:String)->ScriptType? {

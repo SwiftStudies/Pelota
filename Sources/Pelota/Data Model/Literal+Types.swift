@@ -8,8 +8,8 @@
 
 import Foundation
 
-extension String {
-    init?(_ value:Literal?){
+public extension String {
+    public init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }
@@ -22,8 +22,8 @@ extension String {
     }
 }
 
-extension Int {
-    init?(_ value:Literal?){
+public extension Int {
+    public init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }
@@ -35,8 +35,8 @@ extension Int {
     }
 }
 
-extension Bool {
-    init?(_ value:Literal?){
+public extension Bool {
+    public init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }
@@ -48,8 +48,8 @@ extension Bool {
     }
 }
 
-extension Float {
-    init?(_ value:Literal?){
+public extension Float {
+    public init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }
@@ -61,8 +61,8 @@ extension Float {
     }
 }
 
-extension URL {
-    init?(_ value:Literal?){
+public extension URL {
+    public init?(_ value:Literal?){
         guard let value = value else {
             return nil
         }

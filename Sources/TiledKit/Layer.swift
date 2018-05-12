@@ -10,17 +10,17 @@ import Foundation
 import Pelota
 
 public class Layer : Decodable, Propertied{
-    let name    : String
-    let visible : Bool
-    let opacity : Float
-    let x       : Int
-    let y       : Int
+    public let name    : String
+    public let visible : Bool
+    public let opacity : Float
+    public let x       : Int
+    public let y       : Int
     
-    let parent  : LayerContainer
+    public let parent  : LayerContainer
     
-    var properties = [String : Literal]()
+    public var properties = [String : Literal]()
     
-    var level   : Level {
+    public var level   : Level {
         if let parentLevel = parent as? Level {
             return parentLevel
         }
@@ -51,10 +51,10 @@ public class Layer : Decodable, Propertied{
 }
 
 public class TileLayer : Layer {
-    let width : Int
-    let height : Int
-    let tiles : [Int]
-    let offset : (x:Int, y:Int)
+    public let width : Int
+    public let height : Int
+    public let tiles : [Int]
+    public let offset : (x:Int, y:Int)
     
     enum TiledCodingKeys : String, CodingKey {
         case tiles = "data", width, height,offsetx, offsety
@@ -74,15 +74,15 @@ public class TileLayer : Layer {
         
     }
     
-    subscript(_ x:Int, _ y:Int)->Int{
+    public subscript(_ x:Int, _ y:Int)->Int{
         return tiles[x+y*width]
     }
 }
 
-class ObjectLayer : Layer {
-    var objects = [Object] ()
+public class ObjectLayer : Layer {
+    public var objects = [Object] ()
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
         decoder.userInfo.levelDecodingContext.layerPath.append(self)
         objects = try decodeObjects(from: try decoder.container(keyedBy: CodingKeys.self).nestedUnkeyedContainer(forKey: .objects), in: decoder.userInfo.levelDecodingContext)
@@ -95,14 +95,14 @@ class ObjectLayer : Layer {
     }
 }
 
-class GroupLayer : Layer, LayerContainer {
-    var layers = [Layer]()
+public class GroupLayer : Layer, LayerContainer {
+    public var layers = [Layer]()
     
     enum LayerCodingKeys : String, CodingKey {
         case layers
     }
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
         decoder.userInfo.levelDecodingContext.layerPath.append(self)
         layers.append(contentsOf: try Level.decodeLayers(decoder.container(keyedBy: Level.CodingKeys.self)))

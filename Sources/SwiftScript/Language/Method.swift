@@ -54,7 +54,7 @@ extension ScriptType {
         return self as? KeyedType
     }
     
-    var value : Literal {
+    public var value : Literal {
         return require(valueType, or: "\(type(of:self)) is not a value type").value
     }
     

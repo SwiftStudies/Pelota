@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import Pelota
 
 public struct Parameter : Decodable, Symbol {
     public var runTime: Runtime? = nil

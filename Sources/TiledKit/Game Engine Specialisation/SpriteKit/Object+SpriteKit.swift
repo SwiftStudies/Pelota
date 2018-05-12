@@ -7,15 +7,16 @@
 //
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
+import Pelota
 
-fileprivate extension Float {
+public extension Float {
     var cgFloat : CGFloat {
         return CGFloat(self)
     }
 }
 
-extension Object {
-    var frame : CGRect {
+public extension Object {
+    public var frame : CGRect {
         if let object = self as? EllipseObject {
             return CGRect(x: CGFloat(object.x + (object.width / 2)), y: CGFloat(object.y + object.height / 2), width: CGFloat(object.width), height: CGFloat(object.height))
         } else if let object = self as? RectangleObject {
@@ -27,7 +28,7 @@ extension Object {
             return CGRect(x: CGFloat(x), y: CGFloat(y), width: 4, height: 4)
         }
     }
-    func physicsBody(offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture) ->SKPhysicsBody {
+    public func physicsBody(offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture) ->SKPhysicsBody {
         var body : SKPhysicsBody? = nil
         if let object = self as? EllipseObject {
             if object.width == object.height {

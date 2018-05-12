@@ -9,7 +9,7 @@
 import Foundation
 
 public struct Color : Decodable, Equatable{
-    let red:Byte, green:Byte, blue:Byte, alpha:Byte
+    public let red:Byte, green:Byte, blue:Byte, alpha:Byte
     
     //Tiled represents colors in the form of a string #AARRGGBB
     public init(from string:String){
@@ -41,8 +41,8 @@ public struct Color : Decodable, Equatable{
 
 import SpriteKit
 
-extension Color {
-    var skColor : SKColor {
+public extension Color {
+    public var skColor : SKColor {
         let red = CGFloat(self.red) / 255
         let green = CGFloat(self.green) / 255
         let blue = CGFloat(self.blue) / 255

@@ -24,10 +24,10 @@ struct TileSetReference : Decodable {
 
 fileprivate var tileSetCache = [String : TileSet]()
 
-struct TileSet : Decodable {
-    let tileWidth : Int
-    let tileHeight : Int
-    var tiles = [Int:Tile]()
+public struct TileSet : Decodable {
+    public let tileWidth : Int
+    public let tileHeight : Int
+    public var tiles = [Int:Tile]()
     
     public enum CodingKeys : String, CodingKey {
         case tiles
@@ -35,27 +35,27 @@ struct TileSet : Decodable {
         case tileHeight = "tileheight"
     }
     
-    class Tile: Decodable, LayerContainer {
-        var parent: LayerContainer {
+    public class Tile: Decodable, LayerContainer {
+        public var parent: LayerContainer {
             return self
         }
         
-        var layers: [Layer] {
+        public var layers: [Layer] {
             if let objects = objects {
                 return [objects]
             }
             return []
         }
         
-        let path    : String
-        let objects : ObjectLayer?
-        var tileSet : TileSet? = nil
+        public let path    : String
+        public let objects : ObjectLayer?
+        public var tileSet : TileSet? = nil
         
-        public enum CodingKeys : String, CodingKey {
+        enum CodingKeys : String, CodingKey {
             case image, objects = "objectgroup"
         }
         
-        required init(from decoder: Decoder) throws{
+        public required init(from decoder: Decoder) throws{
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
             path = try container.decode(String.self, forKey: CodingKeys.image)
@@ -64,7 +64,7 @@ struct TileSet : Decodable {
         }
     }
     
-    init(from decoder: Decoder) throws{
+    public init(from decoder: Decoder) throws{
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         tileWidth = try container.decode(Int.self, forKey: .tileWidth)
@@ -84,7 +84,7 @@ struct TileSet : Decodable {
         
     }
     
-    init(from file:String){
+    public init(from file:String){
         if let cachedTileSet = tileSetCache[file] {
             self.tiles = cachedTileSet.tiles
             self.tileHeight = cachedTileSet.tileHeight

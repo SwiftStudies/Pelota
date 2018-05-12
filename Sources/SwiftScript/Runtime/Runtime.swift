@@ -7,13 +7,14 @@
 //
 
 import Foundation
+import Pelota
 
 public protocol Runtime {
     func pop()
     func push(identifier:String, for this:ScriptType?, with symbols:[Symbol])
 
     func subscribe(to event:String, from entity:String?, if conditions:[String:Term], notifying:Subscriber)
-    func publish(event:Event)
+    func publish(event name:String, from: String, data:KeyedType)
 
     func resolve(symbol name:String?)->ScriptType
     func resolve(keyPath:KeyPath)->ScriptType

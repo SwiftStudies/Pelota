@@ -9,10 +9,10 @@
 import Foundation
 import Pelota
 
-enum LayerType : Decodable {
+public enum LayerType : Decodable {
     case object, group, tile
     
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         switch try container.decode(String.self, forKey: .type){
@@ -52,26 +52,26 @@ public protocol LayerContainer {
 
 extension LayerContainer {
     
-    var level   : Level {
+    public var level   : Level {
         if let parentIsLevel = parent as? Level {
             return parentIsLevel
         }
         return parent.level
     }
     
-    func getGroups(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer]{
+    public func getGroups(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer]{
         return getLayers(ofType: .group, named: name, matching: conditions, recursively: recursively) as! [GroupLayer]
     }
 
-    func getObjectLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer]{
+    public func getObjectLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer]{
         return getLayers(ofType: .object, named: name, matching: conditions, recursively: recursively) as! [ObjectLayer]
     }
 
-    func getTileLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer]{
+    public func getTileLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer]{
         return getLayers(ofType: .tile, named: name, matching: conditions, recursively: recursively) as! [TileLayer]
     }
     
-    func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer]{
+    public func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer]{
         var matchingLayers = [Layer]()
         
         for layer in layers {

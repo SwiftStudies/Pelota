@@ -11,7 +11,7 @@ import OysterKit
 
 public enum Interpretter {
 
-    static func parse(parameters:String?) throws ->[String:Term]{
+    public static func parse(parameters:String?) throws ->[String:Term]{
         guard let parameters = parameters?.replacingOccurrences(of: "=", with: ":") else {
             return [:]
         }

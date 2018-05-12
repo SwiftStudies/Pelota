@@ -9,8 +9,6 @@
 import Foundation
 import Pelota
 
-
-
 public protocol LevelLoader {
     func willLoadLayers(into level:Level)
     func didLoadLayers(from level:Level)
@@ -22,16 +20,16 @@ public struct Level : Decodable, LayerContainer, Propertied {
         return self
     }
     
-    let height      : Int
-    let width       : Int
-    let tileWidth   : Int
-    let tileHeight  : Int
-    var properties  = [String:Literal]()
+    public let height      : Int
+    public let width       : Int
+    public let tileWidth   : Int
+    public let tileHeight  : Int
+    public var properties  = [String:Literal]()
     public var layers      = [Layer]()
     fileprivate let tileSetReferences    : [TileSetReference]
     fileprivate var tileSets = [TileSet]()
     
-    var tiles = [Int : TileSet.Tile]()
+    public var tiles = [Int : TileSet.Tile]()
     
     public init(){
         height = 0
@@ -72,7 +70,7 @@ public struct Level : Decodable, LayerContainer, Propertied {
         }
     }
     
-    init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], managedBy levelLoader:LevelLoader? = nil){
+    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], managedBy levelLoader:LevelLoader? = nil){
         let url : URL
         
         if let bundleUrl = Bundle.main.url(forResource: file, withExtension: "json") {

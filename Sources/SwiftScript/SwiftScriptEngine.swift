@@ -7,27 +7,21 @@
 //
 
 import Foundation
+import Pelota
 
-public func require<T>(_ optional:T?,or message:String)->T{
-    if let unwrapped = optional {
-        return unwrapped
-    }
-    fatalError(message)
-}
-
-class SwiftScriptEngine : Runtime {
+public class SwiftScriptEngine : Runtime {
     fileprivate var stack           = [Scope]()
     fileprivate let debuggingMode   = false
 
-    init(with symbols:[Symbol]){
+    public init(with symbols:[Symbol]){
         push(identifier:"\(type(of:self))", for: nil, with: symbols)
     }
     
-    func resolve(symbol name: String?) -> ScriptType {
+    public func resolve(symbol name: String?) -> ScriptType {
         return require(stack.last?.resolve(symbol: name), or: "\(name == nil ? "self" : name!) cannot be resolved")
     }
     
-    func resolve(term:Term)->ScriptType{
+    public func resolve(term:Term)->ScriptType{
         switch term {
         case .literal(let literal):
             return literal
@@ -43,11 +37,11 @@ class SwiftScriptEngine : Runtime {
         }
     }
     
-    func pop() {
+    public func pop() {
         stack.removeLast()
     }
     
-    func push(identifier: String, for this: ScriptType?, with symbols: [Symbol]) {
+    public func push(identifier: String, for this: ScriptType?, with symbols: [Symbol]) {
         stack.append(Scope(identifier, in: stack.last, for: this, with: symbols))
     }
     
@@ -56,13 +50,13 @@ class SwiftScriptEngine : Runtime {
         let mask : EventMask
     }
     
-    func subscribe(to event: String, from entity: String?, if conditions: [String : Term], notifying: Subscriber) {
+    public func subscribe(to event: String, from entity: String?, if conditions: [String : Term], notifying: Subscriber) {
         let mask = EventMask(desiredName: event, desiredSource: entity, desiredProperties: conditions)
         let subscription = Subscription(for: notifying, mask: mask)
         subscriptions.append(subscription)
     }
     
-    func resolve(keyPath: KeyPath) -> ScriptType {
+    public func resolve(keyPath: KeyPath) -> ScriptType {
         guard keyPath.count > 0 else {
             return require(stack.last?.resolve(symbol: nil), or: "self not available")
         }
@@ -87,7 +81,10 @@ class SwiftScriptEngine : Runtime {
         print(message)
     }
     
-    func publish(event:Event){
+    
+    
+    public func publish(event name:String, from:String, data:KeyedType){
+        let event = Event(name: name, source: from, data: data, runTime: self)
         debug("PUBLISH \(event.source)->\(event.name)(\(event.data))")
         for subscription in subscriptions {
             if event.matches(mask: subscription.mask, for: subscription.for){
@@ -97,7 +94,7 @@ class SwiftScriptEngine : Runtime {
         }
     }
     
-    func dumpStack() {
+    public func dumpStack() {
         print("Stack Dump")
         print(String(repeating: "=", count: 80))
         for scope in stack.lazy.reversed() {

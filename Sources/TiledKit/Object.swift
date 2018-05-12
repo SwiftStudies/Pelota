@@ -36,18 +36,18 @@ public class Object : Decodable, Propertied{
         case id, name, visible, x, y, type
     }
     
-    let id          : Int
-    let name        : String?
-    var type        : CustomObject?
+    public let id          : Int
+    public let name        : String?
+    public var type        : CustomObject?
     fileprivate let rawType : String?
-    let visible     : Bool
-    let x           : Float
-    let y           : Float
-    let parent      : ObjectLayer
+    public let visible     : Bool
+    public let x           : Float
+    public let y           : Float
+    public let parent      : ObjectLayer
     
-    var properties  = [String:Literal]()
+    public var properties  = [String:Literal]()
     
-    var level       : Level {
+    public var level       : Level {
         return parent.level 
     }
     
@@ -85,16 +85,16 @@ class PointObject : Object {
     }
 }
 
-class RectangleObject : Object {
+public class RectangleObject : Object {
     private enum CodingKeys : String, CodingKey {
         case width, height, rotation
     }
 
-    let width       : Float
-    let height      : Float
-    let rotation    : Float
+    public let width       : Float
+    public let height      : Float
+    public let rotation    : Float
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         if !(container.contains(.width) && container.contains(.height) && container.contains(.rotation)) {
@@ -125,15 +125,15 @@ class EllipseObject : RectangleObject {
     }
 }
 
-class TileObject: RectangleObject {
+public class TileObject: RectangleObject {
     private enum CodingKeys : String, CodingKey {
         case gid, tile
     }
     
-    let gid : Int
-    var tile    : TileSet.Tile? = nil
+    public let gid : Int
+    public var tile    : TileSet.Tile? = nil
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         if !container.contains(.gid) {
@@ -146,12 +146,12 @@ class TileObject: RectangleObject {
     }
 }
 
-class TextObject : RectangleObject {
-    struct TextProperties : Decodable{
-        let fontName : String
-        let fontSize : Int
-        let text     : String
-        let color    : Color
+public class TextObject : RectangleObject {
+    public struct TextProperties : Decodable{
+        public let fontName : String
+        public let fontSize : Int
+        public let text     : String
+        public let color    : Color
         
         enum CodingKeys : String, CodingKey {
             case    fontName = "fontfamily",
@@ -165,9 +165,9 @@ class TextObject : RectangleObject {
         case text
     }
     
-    let text : TextProperties
+    public let text : TextProperties
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         if !container.contains(.text) {
@@ -181,18 +181,18 @@ class TextObject : RectangleObject {
 }
 
 public struct Position : Decodable{
-    let x : Float
-    let y : Float
+    public let x : Float
+    public let y : Float
 }
 
-class PolygonObject : Object {
+public class PolygonObject : Object {
     private enum CodingKeys : String, CodingKey {
         case polygon
     }
     
-    let points : [Position]
+    public let points : [Position]
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         if !container.contains(.polygon) {
@@ -205,14 +205,14 @@ class PolygonObject : Object {
     }
 }
 
-class PolylineObject : Object {
+public class PolylineObject : Object {
     private enum CodingKeys : String, CodingKey {
         case polyline
     }
     
-    let points : [Position]
+    public let points : [Position]
     
-    required init(from decoder: Decoder) throws {
+    public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         
         if !container.contains(.polyline) {

@@ -12,7 +12,7 @@ import Pelota
 public struct Command : Decodable {
     let sendMessage : Message
     
-    func execute(in runTime:Runtime){
+    public func execute(in runTime:Runtime){
         runTime.send(message: sendMessage)
     }
 }

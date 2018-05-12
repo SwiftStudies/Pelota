@@ -8,8 +8,8 @@
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
 
-extension TileLayer{
-    func createNode(for level:SKLevel)->SKNode{
+public extension TileLayer{
+    public func createNode(for level:SKLevel)->SKNode{
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight
         
@@ -38,8 +38,8 @@ extension TileLayer{
     }
 }
 
-extension SKNode{
-    func centerChildren(){
+public extension SKNode{
+    public func centerChildren(){
         let size = calculateAccumulatedFrame()
         
         let dx = size.width / 2.0

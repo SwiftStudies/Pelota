@@ -8,8 +8,8 @@
 
 import Foundation
 
-extension Level {
-    var tileObjectLayers : [Int : ObjectLayer] {
+public extension Level {
+    public var tileObjectLayers : [Int : ObjectLayer] {
         
         var results = [Int:ObjectLayer]()
         for (gid,tile) in tiles {

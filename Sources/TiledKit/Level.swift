@@ -10,19 +10,33 @@ import Foundation
 import Pelota
 
 public protocol LevelLoader {
-    associatedtype  Engine : GameEngine
-    func willLoadLayers(into level:Level<Engine>)
-    func didLoadLayers(from level:Level<Engine>)
+    associatedtype  Engine : GameEngine where Engine.Container.Engine == Engine, Engine.Loader.Engine == Engine
 }
 
 public protocol GameEngine {
-    associatedtype T : Texture
-    associatedtype L : LevelLoader
+    associatedtype Texture   : TextureType
+    associatedtype Loader    : LevelLoader
+    associatedtype Container : LayerContainer
 }
 
-public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
-    public var parent: LayerContainer {
-        return self
+class DecodingContext<Engine:GameEngine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
+    static var key : CodingUserInfoKey {
+        return CodingUserInfoKey(rawValue: "TiledLevelDecodingContext")!
+    }
+    let customObjectTypes : [CustomObject.Type]
+    var level : Level<Engine>? = nil
+    var layerPath = [Layer<Engine>]()
+    var levelLoader : Engine.Loader?
+    
+    init(with customObjectTypes:[CustomObject.Type], managedBy levelLoader : Engine.Loader? = nil){
+        self.customObjectTypes = customObjectTypes
+        self.levelLoader = levelLoader
+    }
+}
+
+public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied where Engine == Engine.Loader.Engine, Engine.Container.Engine == Engine{
+    public var parent: Engine.Container {
+        return self as! Engine.Container
     }
     
     public let height      : Int
@@ -30,11 +44,12 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
     public let tileWidth   : Int
     public let tileHeight  : Int
     public var properties  = [String:Literal]()
-    public var layers      = [Layer]()
-    fileprivate let tileSetReferences    : [TileSetReference]
-    fileprivate var tileSets = [TileSet]()
+    public var layers      = [Layer<Engine>]()
+    fileprivate let tileSetReferences    : [TileSetReference<Engine>]
+    fileprivate var tileSets = [TileSet<Engine>]()
+    var textures    : TextureCache<Engine.Texture>? = nil
     
-    public var tiles = [Int : TileSet.Tile]()
+    public var tiles = [Int : TileSet<Engine>.Tile]()
     
     public init(){
         height = 0
@@ -42,6 +57,10 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
         tileWidth = 0
         tileHeight = 0
         tileSetReferences = []
+    }
+    
+    func decodingContext(_ decoder:Decoder)->DecodingContext<Engine>{
+        return decoder.userInfo.levelDecodingContext()
     }
     
     public init(from decoder:Decoder) throws {
@@ -54,7 +73,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
         properties = try decode(from: decoder)
         
         for tileSetReference in tileSetReferences {
-            let tileSet = TileSet(fromReference: tileSetReference)
+            let tileSet = TileSet<Engine>(fromReference: tileSetReference)
             tileSets.append(tileSet)
             for (lid,tile) in tileSet.tiles {
                 tiles[tileSetReference.firstGID+lid] = tile
@@ -62,20 +81,17 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
         }
 
         //Import to set the level context before decoding layers
-        decoder.userInfo.levelDecodingContext.level = self
-        decoder.userInfo.levelDecodingContext.levelLoader?.willLoadLayers(into: self)
         layers.append(contentsOf: try Level.decodeLayers(container))
-        decoder.userInfo.levelDecodingContext.levelLoader?.didLoadLayers(from: self)
 
         //Now build all the custom objects
         for objectLayer in getObjectLayers(recursively: true){
             for object in objectLayer.objects {
-                object.type = CustomObjectFactory.make(for: object, with: decoder.userInfo.levelDecodingContext.customObjectTypes, andLoader: decoder.userInfo.levelDecodingContext.levelLoader)
+                object.type = CustomObjectFactory.make(for: object, with: decodingContext(decoder).customObjectTypes, andLoader: decodingContext(decoder).levelLoader)
             }
         }
     }
     
-    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], managedBy levelLoader:LevelLoader? = nil){
+    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], managedBy levelLoader:Engine.Loader? = nil){
         let url : URL
         
         if let bundleUrl = Bundle.main.url(forResource: file, withExtension: "json") {
@@ -92,11 +108,10 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
             fatalError("Could not load \(file) as data")
         }
         
-    
-        
         do {
             let jsonDecoder = JSONDecoder()
-            jsonDecoder.userInfo[DecodingContext.key] = DecodingContext(with: customObjectTypes, managedBy: levelLoader)
+            let decodingContext = DecodingContext<Engine>(with: customObjectTypes, managedBy: levelLoader)
+            jsonDecoder.userInfo[DecodingContext<Engine>.key] = decodingContext
             let loadedLevel = try jsonDecoder.decode(Level.self, from: data)
             self.height = loadedLevel.height
             self.width  = loadedLevel.width
@@ -112,19 +127,16 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
         }
     }
     
-    class DecodingContext {
-        static let key = CodingUserInfoKey(rawValue: "TiledLevelDecodingContext")!
-        let customObjectTypes : [CustomObject.Type]
-        var level : Level? = nil
-        var layerPath = [Layer]()
-        var levelLoader : LevelLoader?
-        
-        init(with customObjectTypes:[CustomObject.Type], managedBy levelLoader : LevelLoader? = nil){
-            self.customObjectTypes = customObjectTypes
-            self.levelLoader = levelLoader
+    mutating func cacheTextures(){
+        var textures = TextureCache<Engine.Texture>()
+        for tile in level.tiles {
+            //TODO: Should not have to do this cast but see the issue documented on ```Texture``` protocol declaration
+            textures[tile.key] = (Engine.Texture.cache(from: tile.value.path) as! Engine.Texture)
         }
+        self.textures = textures
     }
-    
+
+
     enum CodingKeys : String, CodingKey {
         case height, width, layers, properties
         case tileWidth  = "tilewidth"
@@ -134,7 +146,8 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
 }
 
 extension Dictionary where Key == CodingUserInfoKey {
-    var levelDecodingContext : Level.DecodingContext {
-        return (self[Level.DecodingContext.key] as? Level.DecodingContext) ?? Level.DecodingContext(with: [])
+    func levelDecodingContext<Engine:GameEngine>()->DecodingContext<Engine>{
+        return (self[DecodingContext<Engine>.key] as? DecodingContext<Engine>) ?? DecodingContext<Engine>(with: [])
+
     }
 }

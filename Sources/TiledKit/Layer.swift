@@ -9,19 +9,19 @@
 import Foundation
 import Pelota
 
-public class Layer : Decodable, Propertied{
+public class Layer<Engine:GameEngine> : Decodable, Propertied where Engine.Loader.Engine == Engine{
     public let name    : String
     public let visible : Bool
     public let opacity : Float
     public let x       : Int
     public let y       : Int
     
-    public let parent  : LayerContainer
+    public let parent  : Engine.Container
     
     public var properties = [String : Literal]()
     
-    public var level   : Level {
-        if let parentLevel = parent as? Level {
+    public var level   : Level<Engine> {
+        if let parentLevel = parent as? Level<Engine> {
             return parentLevel
         }
         return parent.level
@@ -41,16 +41,20 @@ public class Layer : Decodable, Propertied{
         name = try container.decode(String.self, forKey: .name)
         visible = try container.decode(Bool.self, forKey: .visible)
         opacity = try container.decode(Float.self, forKey: .opacity)
-        if let layerStackTop = decoder.userInfo.levelDecodingContext.layerPath.last {
-            parent = layerStackTop as! LayerContainer
+        
+
+        let decoderContext = decoder.userInfo[DecodingContext<Engine>.key] as! DecodingContext<Engine>
+        
+        if let layerStackTop = decoderContext.layerPath.last {
+            parent = layerStackTop as! Engine.Container
         } else {
-            parent = decoder.userInfo.levelDecodingContext.level!
+            parent = decoderContext.level! as! Engine.Container
         }
         properties = try decode(from: decoder)
     }
 }
 
-public class TileLayer : Layer {
+public class TileLayer<Engine:GameEngine> : Layer<Engine> where Engine.Loader.Engine == Engine {
     public let width : Int
     public let height : Int
     public let tiles : [Int]
@@ -69,9 +73,10 @@ public class TileLayer : Layer {
         let offsety = (try? container.decode(Int.self, forKey: .offsety)) ?? 0
         offset = (offsetx, offsety)
         try super.init(from: decoder)
-        decoder.userInfo.levelDecodingContext.layerPath.append(self)
-        decoder.userInfo.levelDecodingContext.layerPath.removeLast()
         
+        let decoderContext = level.decodingContext(decoder)
+        decoderContext.layerPath.append(self)
+        decoderContext.layerPath.removeLast()
     }
     
     public subscript(_ x:Int, _ y:Int)->Int{
@@ -79,24 +84,25 @@ public class TileLayer : Layer {
     }
 }
 
-public class ObjectLayer : Layer {
-    public var objects = [Object] ()
+public class ObjectLayer<Engine:GameEngine> : Layer<Engine>  where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
+    public var objects = [Object<Engine>] ()
     
     public required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
-        decoder.userInfo.levelDecodingContext.layerPath.append(self)
-        objects = try decodeObjects(from: try decoder.container(keyedBy: CodingKeys.self).nestedUnkeyedContainer(forKey: .objects), in: decoder.userInfo.levelDecodingContext)
+        let decoderContext = level.decodingContext(decoder)
+        decoderContext.layerPath.append(self)
+        objects = try decodeObjects(from: try decoder.container(keyedBy: CodingKeys.self).nestedUnkeyedContainer(forKey: .objects), in: decoderContext)
         
         for tileObject in objects.compactMap({$0 as? TileObject}){
-            tileObject.tile = decoder.userInfo.levelDecodingContext.level?.tiles[tileObject.gid]
+            tileObject.tile = decoder.userInfo.levelDecodingContext().level?.tiles[tileObject.gid]
         }
         
-        decoder.userInfo.levelDecodingContext.layerPath.removeLast()
+        decoderContext.layerPath.removeLast()
     }
 }
 
-public class GroupLayer : Layer, LayerContainer {
-    public var layers = [Layer]()
+public final class GroupLayer<Engine:GameEngine> : Layer<Engine>, LayerContainer  where Engine.Loader.Engine == Engine{
+    public var layers = [Layer<Engine>]()
     
     enum LayerCodingKeys : String, CodingKey {
         case layers
@@ -104,9 +110,11 @@ public class GroupLayer : Layer, LayerContainer {
     
     public required init(from decoder: Decoder) throws {
         try super.init(from: decoder)
-        decoder.userInfo.levelDecodingContext.layerPath.append(self)
+        let decoderContext = level.decodingContext(decoder)
+        
+        decoderContext.layerPath.append(self)
         layers.append(contentsOf: try Level.decodeLayers(decoder.container(keyedBy: Level.CodingKeys.self)))
-        decoder.userInfo.levelDecodingContext.layerPath.removeLast()
+        decoderContext.layerPath.removeLast()
     }
 }
 

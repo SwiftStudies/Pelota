@@ -7,8 +7,7 @@
 
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
-
-public typealias SKLevel = TiledLevel<SKTexture>
+import Pelota
 
 public extension Position {
     public var cgPoint : CGPoint {

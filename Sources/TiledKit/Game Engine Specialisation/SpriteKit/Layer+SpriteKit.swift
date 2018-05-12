@@ -8,8 +8,8 @@
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
 
-public extension TileLayer{
-    public func createNode(for level:SKLevel)->SKNode{
+extension TileLayer where Engine.Loader.Engine == Engine{
+    public func createNode(for level:Level<Engine>)->SKNode{
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight
         
@@ -26,7 +26,7 @@ public extension TileLayer{
                     continue
                 }
                 
-                let spriteNode = SKSpriteNode(texture: allTextures[texture])
+                let spriteNode = SKSpriteNode(texture: (allTextures[texture] as! SKTexture))
                 spriteNode.position = CGPoint(x:(x*level.tileWidth+offset.x) - pixelWidth >> 1, y:(-y*level.tileHeight-offset.y) + pixelHeight >> 1)
                 spriteNode.position.x += spriteNode.size.width / 2
                 spriteNode.position.y += (spriteNode.size.height / 2) - CGFloat(level.tileHeight)

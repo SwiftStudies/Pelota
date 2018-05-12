@@ -13,3 +13,8 @@ public func require<T>(_ optional:T?,or message:String)->T{
     fatalError(message)
 }
 
+
+public struct Position : Decodable{
+    public let x : Float
+    public let y : Float
+}

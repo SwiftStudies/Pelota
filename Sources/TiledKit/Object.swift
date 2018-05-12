@@ -11,13 +11,13 @@ import Pelota
 
 public protocol CustomObject {
     static var identifier : String { get }
-    init?(for object: Object, withLoader levelLoader: LevelLoader?)
+    init?<Engine:GameEngine>(for object: Object<Engine>, withLoader levelLoader: Engine.Loader?) where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine
 }
 
 fileprivate var registeredCustomObjectTypes = [CustomObject.Type]()
 
 enum CustomObjectFactory {
-    static func make(for object:Object, with customObjectTypes:[CustomObject.Type], andLoader levelLoader:LevelLoader?)->CustomObject? {
+    static func make<Engine:GameEngine>(for object:Object<Engine>, with customObjectTypes:[CustomObject.Type], andLoader levelLoader:Engine.Loader?)->CustomObject? {
         for type in customObjectTypes {
             if type.identifier == object.rawType ?? "" {
                 return type.init(for: object, withLoader: levelLoader)
@@ -27,7 +27,7 @@ enum CustomObjectFactory {
     }
 }
 
-public class Object : Decodable, Propertied{
+public class Object<Engine:GameEngine> : Decodable, Propertied where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
     internal enum ObjectDecodingError : Error {
         case notMyType      // A specialisation cannot decode
         case unknownType    // No specialisation can decode
@@ -43,11 +43,11 @@ public class Object : Decodable, Propertied{
     public let visible     : Bool
     public let x           : Float
     public let y           : Float
-    public let parent      : ObjectLayer
+    public let parent      : ObjectLayer<Engine>
     
     public var properties  = [String:Literal]()
     
-    public var level       : Level {
+    public var level       : Level<Engine> {
         return parent.level 
     }
     
@@ -62,14 +62,14 @@ public class Object : Decodable, Propertied{
         y       = try container.decode(Float.self, forKey: .y)
         rawType = try container.decodeIfPresent(String.self, forKey: .type)
         
-        parent = decoder.userInfo.levelDecodingContext.layerPath.last! as! ObjectLayer
+        parent = decoder.userInfo.levelDecodingContext().layerPath.last! as! ObjectLayer
         
         // Properties
         properties = try decode(from: decoder)
     }
 }
 
-class PointObject : Object {
+class PointObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
     private enum CodingKeys : String, CodingKey {
         case point
     }
@@ -85,7 +85,7 @@ class PointObject : Object {
     }
 }
 
-public class RectangleObject : Object {
+public class RectangleObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
     private enum CodingKeys : String, CodingKey {
         case width, height, rotation
     }
@@ -109,7 +109,7 @@ public class RectangleObject : Object {
     }
 }
 
-class EllipseObject : RectangleObject {
+class EllipseObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
     private enum CodingKeys : String, CodingKey {
         case ellipse
     }
@@ -125,13 +125,13 @@ class EllipseObject : RectangleObject {
     }
 }
 
-public class TileObject: RectangleObject {
+public class TileObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
     private enum CodingKeys : String, CodingKey {
         case gid, tile
     }
     
     public let gid : Int
-    public var tile    : TileSet.Tile? = nil
+    public var tile    : TileSet<Engine>.Tile? = nil
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -146,7 +146,7 @@ public class TileObject: RectangleObject {
     }
 }
 
-public class TextObject : RectangleObject {
+public class TextObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
     public struct TextProperties : Decodable{
         public let fontName : String
         public let fontSize : Int
@@ -180,12 +180,8 @@ public class TextObject : RectangleObject {
     }
 }
 
-public struct Position : Decodable{
-    public let x : Float
-    public let y : Float
-}
 
-public class PolygonObject : Object {
+public class PolygonObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
     private enum CodingKeys : String, CodingKey {
         case polygon
     }
@@ -205,7 +201,7 @@ public class PolygonObject : Object {
     }
 }
 
-public class PolylineObject : Object {
+public class PolylineObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
     private enum CodingKeys : String, CodingKey {
         case polyline
     }
@@ -226,11 +222,11 @@ public class PolylineObject : Object {
 }
 
 extension ObjectLayer {
-    func decodeObjects(from container: UnkeyedDecodingContainer, in context:Level.DecodingContext) throws -> [Object] {
+    func decodeObjects<Engine:GameEngine>(from container: UnkeyedDecodingContainer, in context:DecodingContext<Engine>) throws -> [Object<Engine>] where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
         var container = container
-        let objectKinds = [PolylineObject.self, PolygonObject.self, PointObject.self, TextObject.self, TileObject.self, EllipseObject.self, RectangleObject.self]
+        let objectKinds = [PolylineObject<Engine>.self, PolygonObject<Engine>.self, PointObject<Engine>.self, TextObject<Engine>.self, TileObject<Engine>.self, EllipseObject<Engine>.self, RectangleObject<Engine>.self]
         
-        var objects = [Object]()
+        var objects = [Object<Engine>]()
 
         ontoNextObject: while !container.isAtEnd {
             for objectKind in objectKinds {
@@ -240,7 +236,7 @@ extension ObjectLayer {
                     continue ontoNextObject
                 } catch let error as DecodingError {
                     throw error
-                } catch _ as Object.ObjectDecodingError {
+                } catch _ as Object<Engine>.ObjectDecodingError {
                     continue
                 }
             }

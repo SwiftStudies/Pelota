@@ -46,33 +46,34 @@ extension Layer {
 }
 
 public protocol LayerContainer {
-    var parent : LayerContainer {get}
-    var layers : [Layer] {get}
+    associatedtype Engine : GameEngine where Engine.Loader.Engine == Engine
+    var parent : Engine.Container {get}
+    var layers : [Layer<Engine>] {get}
 }
 
 extension LayerContainer {
     
-    public var level   : Level {
-        if let parentIsLevel = parent as? Level {
+    public var level   : Level<Engine> {
+        if let parentIsLevel = parent as? Level<Engine> {
             return parentIsLevel
         }
-        return parent.level
+        return parent.level 
     }
     
-    public func getGroups(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer]{
-        return getLayers(ofType: .group, named: name, matching: conditions, recursively: recursively) as! [GroupLayer]
+    public func getGroups(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer<Engine>]{
+        return getLayers(ofType: .group, named: name, matching: conditions, recursively: recursively) as! [GroupLayer<Engine>]
     }
 
-    public func getObjectLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer]{
-        return getLayers(ofType: .object, named: name, matching: conditions, recursively: recursively) as! [ObjectLayer]
+    public func getObjectLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer<Engine>]{
+        return getLayers(ofType: .object, named: name, matching: conditions, recursively: recursively) as! [ObjectLayer<Engine>]
     }
 
-    public func getTileLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer]{
-        return getLayers(ofType: .tile, named: name, matching: conditions, recursively: recursively) as! [TileLayer]
+    public func getTileLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer<Engine>]{
+        return getLayers(ofType: .tile, named: name, matching: conditions, recursively: recursively) as! [TileLayer<Engine>]
     }
     
-    public func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer]{
-        var matchingLayers = [Layer]()
+    public func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer<Engine>]{
+        var matchingLayers = [Layer<Engine>]()
         
         for layer in layers {
             var matches = true
@@ -109,19 +110,19 @@ extension LayerContainer {
         return matchingLayers
     }
     
-    static func decodeLayers(_ container:KeyedDecodingContainer<Level.CodingKeys>) throws ->[Layer]  {
+    static func decodeLayers(_ container:KeyedDecodingContainer<Level<Engine>.CodingKeys>) throws ->[Layer<Engine>]  {
         var typeExposer     = try container.nestedUnkeyedContainer(forKey: Level.CodingKeys.layers)
         var undecodedLayers = try container.nestedUnkeyedContainer(forKey: Level.CodingKeys.layers)
-        var decodedLayers = [Layer]()
+        var decodedLayers = [Layer<Engine>]()
         while !undecodedLayers.isAtEnd {
             let layerType = try typeExposer.decode(LayerType.self)
             switch layerType {
             case .group:
-                decodedLayers.append(try undecodedLayers.decode(GroupLayer.self))
+                decodedLayers.append(try undecodedLayers.decode(GroupLayer<Engine>.self))
             case .object:
-                decodedLayers.append(try undecodedLayers.decode(ObjectLayer.self))
+                decodedLayers.append(try undecodedLayers.decode(ObjectLayer<Engine>.self))
             case .tile:
-                decodedLayers.append(try undecodedLayers.decode(TileLayer.self))
+                decodedLayers.append(try undecodedLayers.decode(TileLayer<Engine>.self))
             }
         }
         return decodedLayers

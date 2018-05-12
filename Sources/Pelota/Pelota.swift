@@ -12,3 +12,4 @@ public func require<T>(_ optional:T?,or message:String)->T{
     }
     fatalError(message)
 }
+

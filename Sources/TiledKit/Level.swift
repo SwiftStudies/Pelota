@@ -10,12 +10,17 @@ import Foundation
 import Pelota
 
 public protocol LevelLoader {
-    func willLoadLayers(into level:Level)
-    func didLoadLayers(from level:Level)
-    
+    associatedtype  Engine : GameEngine
+    func willLoadLayers(into level:Level<Engine>)
+    func didLoadLayers(from level:Level<Engine>)
 }
 
-public struct Level : Decodable, LayerContainer, Propertied {
+public protocol GameEngine {
+    associatedtype T : Texture
+    associatedtype L : LevelLoader
+}
+
+public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
     public var parent: LayerContainer {
         return self
     }

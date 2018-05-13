@@ -9,6 +9,13 @@
 import SpriteKit
 import Pelota
 
+struct SpriteKit : GameEngine {
+    typealias Texture   = SKTexture
+    typealias Container = LayerContainer
+
+    
+}
+
 public extension Position {
     public var cgPoint : CGPoint {
         return CGPoint(x:CGFloat(self.x), y: -CGFloat(self.y))

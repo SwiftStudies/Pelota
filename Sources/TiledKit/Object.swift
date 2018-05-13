@@ -11,23 +11,23 @@ import Pelota
 
 public protocol CustomObject {
     static var identifier : String { get }
-    init?<Engine:GameEngine>(for object: Object<Engine>, withLoader levelLoader: Engine.Loader?) where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine
+    init?<Engine:GameEngine>(for object: Object<Engine>)
 }
 
 fileprivate var registeredCustomObjectTypes = [CustomObject.Type]()
 
 enum CustomObjectFactory {
-    static func make<Engine:GameEngine>(for object:Object<Engine>, with customObjectTypes:[CustomObject.Type], andLoader levelLoader:Engine.Loader?)->CustomObject? {
+    static func make<Engine:GameEngine>(for object:Object<Engine>, with customObjectTypes:[CustomObject.Type])->CustomObject? {
         for type in customObjectTypes {
             if type.identifier == object.rawType ?? "" {
-                return type.init(for: object, withLoader: levelLoader)
+                return type.init(for: object)
             }
         }
         return nil
     }
 }
 
-public class Object<Engine:GameEngine> : Decodable, Propertied where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
+public class Object<Engine:GameEngine> : Decodable, Propertied{
     internal enum ObjectDecodingError : Error {
         case notMyType      // A specialisation cannot decode
         case unknownType    // No specialisation can decode
@@ -69,7 +69,7 @@ public class Object<Engine:GameEngine> : Decodable, Propertied where Engine.Load
     }
 }
 
-class PointObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+class PointObject<Engine:GameEngine> : Object<Engine> {
     private enum CodingKeys : String, CodingKey {
         case point
     }
@@ -85,7 +85,7 @@ class PointObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine
     }
 }
 
-public class RectangleObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
+public class RectangleObject<Engine:GameEngine> : Object<Engine>{
     private enum CodingKeys : String, CodingKey {
         case width, height, rotation
     }
@@ -109,7 +109,7 @@ public class RectangleObject<Engine:GameEngine> : Object<Engine> where Engine.Lo
     }
 }
 
-class EllipseObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+class EllipseObject<Engine:GameEngine> : RectangleObject<Engine>{
     private enum CodingKeys : String, CodingKey {
         case ellipse
     }
@@ -125,7 +125,7 @@ class EllipseObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Lo
     }
 }
 
-public class TileObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
+public class TileObject<Engine:GameEngine> : RectangleObject<Engine>{
     private enum CodingKeys : String, CodingKey {
         case gid, tile
     }
@@ -146,7 +146,7 @@ public class TileObject<Engine:GameEngine> : RectangleObject<Engine> where Engin
     }
 }
 
-public class TextObject<Engine:GameEngine> : RectangleObject<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine  {
+public class TextObject<Engine:GameEngine> : RectangleObject<Engine>{
     public struct TextProperties : Decodable{
         public let fontName : String
         public let fontSize : Int
@@ -181,7 +181,7 @@ public class TextObject<Engine:GameEngine> : RectangleObject<Engine> where Engin
 }
 
 
-public class PolygonObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+public class PolygonObject<Engine:GameEngine> : Object<Engine>{
     private enum CodingKeys : String, CodingKey {
         case polygon
     }
@@ -201,7 +201,7 @@ public class PolygonObject<Engine:GameEngine> : Object<Engine> where Engine.Load
     }
 }
 
-public class PolylineObject<Engine:GameEngine> : Object<Engine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+public class PolylineObject<Engine:GameEngine> : Object<Engine>{
     private enum CodingKeys : String, CodingKey {
         case polyline
     }
@@ -222,7 +222,7 @@ public class PolylineObject<Engine:GameEngine> : Object<Engine> where Engine.Loa
 }
 
 extension ObjectLayer {
-    func decodeObjects<Engine:GameEngine>(from container: UnkeyedDecodingContainer, in context:DecodingContext<Engine>) throws -> [Object<Engine>] where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+    func decodeObjects<Engine:GameEngine>(from container: UnkeyedDecodingContainer, in context:DecodingContext<Engine>) throws -> [Object<Engine>] {
         var container = container
         let objectKinds = [PolylineObject<Engine>.self, PolygonObject<Engine>.self, PointObject<Engine>.self, TextObject<Engine>.self, TileObject<Engine>.self, EllipseObject<Engine>.self, RectangleObject<Engine>.self]
         
@@ -248,10 +248,10 @@ extension ObjectLayer {
 }
 
 public extension LayerContainer {
-    func customObjects<T>(traverseGroups:Bool = false)->[T]{
+    func customObjects<T,E:GameEngine>(for engine:E.Type, traverseGroups:Bool = false)->[T]{
         var objects = [T]()
         
-        for layer in getObjectLayers(recursively: traverseGroups) {
+        for layer in getObjectLayers(recursively: traverseGroups) as [ObjectLayer<E>]{
             objects.append(contentsOf: layer.objects.compactMap({$0.type as? T}))
         }
         

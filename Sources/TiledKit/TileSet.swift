@@ -9,7 +9,7 @@
 import Foundation
 import SpriteKit
 
-struct TileSetReference<Engine:GameEngine> : Decodable where Engine.Loader.Engine == Engine {
+struct TileSetReference<Engine:GameEngine> : Decodable{
     internal let firstGID    : Int
     fileprivate let file        : String
     
@@ -24,7 +24,7 @@ struct TileSetReference<Engine:GameEngine> : Decodable where Engine.Loader.Engin
 
 var tileSetCache = [String : Any]()
 
-public struct TileSet<Engine:GameEngine> : Decodable where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine {
+public struct TileSet<Engine:GameEngine> : Decodable{
     public let tileWidth : Int
     public let tileHeight : Int
     public var tiles = [Int:Tile]()
@@ -36,14 +36,13 @@ public struct TileSet<Engine:GameEngine> : Decodable where Engine.Loader.Engine 
     }
     
     public class Tile: Decodable, LayerContainer {
-        
-        public var parent: Engine.Container {
-            return self as! Engine.Container
+        public func parent<Engine>() -> LayerContainerReference<Engine>? where Engine : GameEngine {
+            return LayerContainerReference<Engine>.tile(tile: self as! TileSet<Engine>.Tile)
         }
         
-        public var layers: [Layer<Engine>] {
+        public func layers<Engine>() -> [Layer<Engine>] where Engine : GameEngine {
             if let objects = objects {
-                return [objects]
+                return [objects] as! [Layer<Engine>]
             }
             return []
         }

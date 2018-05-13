@@ -8,7 +8,7 @@
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
 
-extension TileLayer where Engine.Loader.Engine == Engine{
+extension TileLayer {
     public func createNode(for level:Level<Engine>)->SKNode{
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight

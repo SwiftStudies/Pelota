@@ -9,22 +9,19 @@
 import Foundation
 import Pelota
 
-public class Layer<Engine:GameEngine> : Decodable, Propertied where Engine.Loader.Engine == Engine{
+public class Layer<Engine:GameEngine> : Decodable, Propertied{
     public let name    : String
     public let visible : Bool
     public let opacity : Float
     public let x       : Int
     public let y       : Int
     
-    public let parent  : Engine.Container
+    let parentContainer  : LayerContainerReference<Engine>
     
     public var properties = [String : Literal]()
     
     public var level   : Level<Engine> {
-        if let parentLevel = parent as? Level<Engine> {
-            return parentLevel
-        }
-        return parent.level
+        return require(parentContainer.level, or: "Layer's parent has no level")
     }
     
     enum CodingKeys : String, CodingKey {
@@ -46,15 +43,15 @@ public class Layer<Engine:GameEngine> : Decodable, Propertied where Engine.Loade
         let decoderContext = decoder.userInfo[DecodingContext<Engine>.key] as! DecodingContext<Engine>
         
         if let layerStackTop = decoderContext.layerPath.last {
-            parent = layerStackTop as! Engine.Container
+            parentContainer = LayerContainerReference<Engine>.group(group: layerStackTop as! GroupLayer<Engine>)
         } else {
-            parent = decoderContext.level! as! Engine.Container
+            parentContainer = LayerContainerReference<Engine>.level(level: decoderContext.level!)
         }
         properties = try decode(from: decoder)
     }
 }
 
-public class TileLayer<Engine:GameEngine> : Layer<Engine> where Engine.Loader.Engine == Engine {
+public class TileLayer<Engine:GameEngine> : Layer<Engine>{
     public let width : Int
     public let height : Int
     public let tiles : [Int]
@@ -84,7 +81,7 @@ public class TileLayer<Engine:GameEngine> : Layer<Engine> where Engine.Loader.En
     }
 }
 
-public class ObjectLayer<Engine:GameEngine> : Layer<Engine>  where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
+public class ObjectLayer<Engine:GameEngine> : Layer<Engine>{
     public var objects = [Object<Engine>] ()
     
     public required init(from decoder: Decoder) throws {
@@ -101,8 +98,16 @@ public class ObjectLayer<Engine:GameEngine> : Layer<Engine>  where Engine.Loader
     }
 }
 
-public final class GroupLayer<Engine:GameEngine> : Layer<Engine>, LayerContainer  where Engine.Loader.Engine == Engine{
-    public var layers = [Layer<Engine>]()
+public final class GroupLayer<Engine:GameEngine> : Layer<Engine>, LayerContainer{
+    public func parent<E:GameEngine>() -> LayerContainerReference<E>? {
+        return (parentContainer as! LayerContainerReference<E>)
+    }
+    
+    public func layers<E:GameEngine>() -> [Layer<E>]{
+        return (children as! [Layer<E>])
+    }
+    
+    public var children = [Layer<Engine>]()
     
     enum LayerCodingKeys : String, CodingKey {
         case layers
@@ -113,7 +118,8 @@ public final class GroupLayer<Engine:GameEngine> : Layer<Engine>, LayerContainer
         let decoderContext = level.decodingContext(decoder)
         
         decoderContext.layerPath.append(self)
-        layers.append(contentsOf: try Level.decodeLayers(decoder.container(keyedBy: Level.CodingKeys.self)))
+        let layers : [Layer<Engine>] = try Level<Engine>.decodeLayers(decoder.container(keyedBy: Level.CodingKeys.self))
+        children.append(contentsOf: layers)
         decoderContext.layerPath.removeLast()
     }
 }

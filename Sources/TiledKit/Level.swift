@@ -9,34 +9,52 @@
 import Foundation
 import Pelota
 
-public protocol LevelLoader {
-    associatedtype  Engine : GameEngine where Engine.Container.Engine == Engine, Engine.Loader.Engine == Engine
-}
+//public enum GenericContainer<Engine:GameEngine> : LayerContainer {
+//    typealias LayerContainer.Engine = Engine
+//
+//    case    level(level:Level<Engine>),
+//            group(group:GroupLayer<Engine>)
+//    
+//    public var parent: Engine.Container{
+//        switch self{
+//        case .level(let level):
+//            return level
+//        case .group(let group):
+//            return group.layers
+//        }
+//    }
+//    
+//    public var layers: [Layer<Engine>]{
+//        switch self
+//    }
+//    
+//    
+//}
 
 public protocol GameEngine {
     associatedtype Texture   : TextureType
-    associatedtype Loader    : LevelLoader
-    associatedtype Container : LayerContainer
 }
 
-class DecodingContext<Engine:GameEngine> where Engine.Loader.Engine == Engine, Engine.Container.Engine == Engine{
+class DecodingContext<Engine:GameEngine>{
     static var key : CodingUserInfoKey {
         return CodingUserInfoKey(rawValue: "TiledLevelDecodingContext")!
     }
     let customObjectTypes : [CustomObject.Type]
     var level : Level<Engine>? = nil
     var layerPath = [Layer<Engine>]()
-    var levelLoader : Engine.Loader?
     
-    init(with customObjectTypes:[CustomObject.Type], managedBy levelLoader : Engine.Loader? = nil){
+    init(with customObjectTypes:[CustomObject.Type]){
         self.customObjectTypes = customObjectTypes
-        self.levelLoader = levelLoader
     }
 }
 
-public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied where Engine == Engine.Loader.Engine, Engine.Container.Engine == Engine{
-    public var parent: Engine.Container {
-        return self as! Engine.Container
+public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
+    public func parent<E>() -> LayerContainerReference<E>? where E : GameEngine {
+        return LayerContainerReference<E>.level(level: self as! Level<E>)
+    }
+    
+    public func layers<E>() -> [Layer<E>] where E : GameEngine {
+        return allLayers as! [Layer<E>]
     }
     
     public let height      : Int
@@ -44,7 +62,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied w
     public let tileWidth   : Int
     public let tileHeight  : Int
     public var properties  = [String:Literal]()
-    public var layers      = [Layer<Engine>]()
+    public var allLayers      = [Layer<Engine>]()
     fileprivate let tileSetReferences    : [TileSetReference<Engine>]
     fileprivate var tileSets = [TileSet<Engine>]()
     var textures    : TextureCache<Engine.Texture>? = nil
@@ -81,17 +99,17 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied w
         }
 
         //Import to set the level context before decoding layers
-        layers.append(contentsOf: try Level.decodeLayers(container))
+        allLayers.append(contentsOf: try Level.decodeLayers(container))
 
         //Now build all the custom objects
-        for objectLayer in getObjectLayers(recursively: true){
+        for objectLayer in getObjectLayers(recursively: true) as [ObjectLayer<Engine>]{
             for object in objectLayer.objects {
-                object.type = CustomObjectFactory.make(for: object, with: decodingContext(decoder).customObjectTypes, andLoader: decodingContext(decoder).levelLoader)
+                object.type = CustomObjectFactory.make(for: object, with: decodingContext(decoder).customObjectTypes)
             }
         }
     }
     
-    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], managedBy levelLoader:Engine.Loader? = nil){
+    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = []){
         let url : URL
         
         if let bundleUrl = Bundle.main.url(forResource: file, withExtension: "json") {
@@ -110,7 +128,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied w
         
         do {
             let jsonDecoder = JSONDecoder()
-            let decodingContext = DecodingContext<Engine>(with: customObjectTypes, managedBy: levelLoader)
+            let decodingContext = DecodingContext<Engine>(with: customObjectTypes)
             jsonDecoder.userInfo[DecodingContext<Engine>.key] = decodingContext
             let loadedLevel = try jsonDecoder.decode(Level.self, from: data)
             self.height = loadedLevel.height
@@ -118,7 +136,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied w
             self.tileWidth = loadedLevel.tileWidth
             self.tileHeight = loadedLevel.tileHeight
             self.properties = loadedLevel.properties
-            self.layers = loadedLevel.layers
+            self.allLayers = loadedLevel.allLayers
             self.tileSetReferences = loadedLevel.tileSetReferences
             self.tileSets = loadedLevel.tileSets
             self.tiles = loadedLevel.tiles
@@ -129,7 +147,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied w
     
     mutating func cacheTextures(){
         var textures = TextureCache<Engine.Texture>()
-        for tile in level.tiles {
+        for tile in tiles {
             //TODO: Should not have to do this cast but see the issue documented on ```Texture``` protocol declaration
             textures[tile.key] = (Engine.Texture.cache(from: tile.value.path) as! Engine.Texture)
         }

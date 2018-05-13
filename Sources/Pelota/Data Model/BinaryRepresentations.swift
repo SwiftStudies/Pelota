@@ -6,4 +6,4 @@
 
 import Foundation
 
-public typealias Byte = UInt
+public typealias Byte = UInt8

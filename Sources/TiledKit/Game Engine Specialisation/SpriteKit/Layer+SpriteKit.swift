@@ -13,9 +13,8 @@ extension TileLayer {
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight
         
-        guard let allTextures = level.textures else {
-            fatalError("No textures have been cached")
-        }
+        let allTextures = level.engine.textureCache
+        
         
         let node = SKNode()
         

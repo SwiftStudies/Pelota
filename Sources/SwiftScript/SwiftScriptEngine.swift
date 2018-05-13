@@ -51,7 +51,7 @@ public class SwiftScriptEngine : Runtime {
     }
     
     public func subscribe(to event: String, from entity: String?, if conditions: [String : Term], notifying: Subscriber) {
-        let mask = EventMask(desiredName: event, desiredSource: entity, desiredProperties: conditions)
+        let mask = EventMask(name: event, from: entity, matching: conditions)
         let subscription = Subscription(for: notifying, mask: mask)
         subscriptions.append(subscription)
     }

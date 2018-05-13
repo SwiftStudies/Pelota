@@ -9,10 +9,44 @@
 import SpriteKit
 import Pelota
 
-public struct SpriteKit : GameEngine {
+public class SpriteKit : GameEngine {
     public typealias Texture   = SKTexture
     public typealias Container = LayerContainer
+
+    public let physicsCategories = PhysicsCategory()
+    public var textureCache      = TextureCache<Texture>()
     
+    public required init(){
+        
+    }
+}
+
+public final class PhysicsCategory {
+    private var physicsBodyCategories = [String : UInt32]()
+
+    public init(){
+        
+    }
+    
+    public func getCategory(`for` name:String)->UInt32{
+        if let existingCategory = physicsBodyCategories[name] {
+            return existingCategory
+        }
+        let newCategory : UInt32 = 1 << physicsBodyCategories.count
+        physicsBodyCategories[name] = newCategory
+
+        return newCategory
+    }
+    
+    public func getMask(`for` list:[String])->UInt32{
+        var mask : UInt32 = 0
+
+        for category in list {
+            mask |= getCategory(for: category)
+        }
+
+        return mask
+    }
 }
 
 public extension Position {

@@ -13,6 +13,12 @@ public struct EventMask {
     public let desiredName : String
     public let desiredSource : String?
     public let desiredProperties : [String:Term]?
+    
+    public init(name:String, from source:String? = nil, matching conditions:[String:Term]? = nil){
+        desiredName = name
+        desiredSource = source
+        desiredProperties = conditions
+    }
 }
 
 public struct Event : KeyedType{

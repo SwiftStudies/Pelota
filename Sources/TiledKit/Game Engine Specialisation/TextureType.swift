@@ -15,7 +15,11 @@ public protocol TextureType {
 public struct TextureCache<EngineTexture:TextureType>{
     private var cache = [Int:EngineTexture]()
     
-    subscript(_ gid: Int)->EngineTexture?{
+    public init(){
+        
+    }
+    
+    public subscript(_ gid: Int)->EngineTexture?{
         get{
             return cache[gid]
         }

@@ -28,7 +28,7 @@ public extension Object {
             return CGRect(x: CGFloat(x), y: CGFloat(y), width: 4, height: 4)
         }
     }
-    public func physicsBody(offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture) ->SKPhysicsBody {
+    public func physicsBody(offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture? = nil) ->SKPhysicsBody {
         var body : SKPhysicsBody? = nil
         if let object = self as? EllipseObject {
             if object.width == object.height {
@@ -41,7 +41,7 @@ public extension Object {
             body = SKPhysicsBody(polygonFrom: object.points.cgPath)
         } else if let object = self as? PolylineObject {
             body = SKPhysicsBody(edgeChainFrom: object.points.cgPath)
-        } else if let object = self as? TileObject,let collisionDefinition = object.tile?.objects?.objects.first {
+        } else if let object = self as? TileObject,let collisionDefinition = object.tile?.objects?.objects.first, let tileTexture = tileTexture  {
             //For any other object we use a node to move the physics body to the correct location, within a tile sprite
             //the body needs to be moved for those that are created in the absence of a co-ordinate system (i.e. typically just width and height
             //then shifted by a center

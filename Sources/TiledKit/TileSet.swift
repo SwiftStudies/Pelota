@@ -102,7 +102,7 @@ public struct TileSet<Engine:GameEngine> : Decodable{
         
         do {
             let jsonDecoder = JSONDecoder()
-            jsonDecoder.userInfo[DecodingContext<Engine>.key] = DecodingContext<Engine>(with: [])
+            jsonDecoder.userInfo[DecodingContext<Engine>.key] = DecodingContext<Engine>(with: [], with: Engine())
             
             let loaded = try jsonDecoder.decode(TileSet.self, from: data)
             tileSetCache[file] = loaded

@@ -19,6 +19,14 @@ public struct TextureCache<EngineTexture:TextureType>{
         
     }
     
+    public var count : Int {
+        return cache.count
+    }
+    
+    public var allGids : [Int] {
+        return cache.map({$0.key})
+    }
+    
     public subscript(_ gid: Int)->EngineTexture?{
         get{
             return cache[gid]
@@ -27,6 +35,7 @@ public struct TextureCache<EngineTexture:TextureType>{
             cache[gid] = newValue 
         }
     }
+
 }
 
 

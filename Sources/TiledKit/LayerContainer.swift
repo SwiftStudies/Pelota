@@ -58,10 +58,14 @@ public enum LayerContainerReference<Engine:GameEngine> {
     }
     
     var level : Level<Engine>? {
-        if case let .level(level) = self {
+        switch self {
+        case .level(let level):
             return level
+        case .group(let group):
+            return group.parent()?.level
+        case .tile(let tile):
+            return tile.parent()?.level
         }
-        return nil
     }
     
     var tile : TileSet<Engine>.Tile? {

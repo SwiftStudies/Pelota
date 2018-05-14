@@ -96,6 +96,7 @@ public struct Level<Engine:GameEngine> : Decodable, LayerContainer, Propertied {
         tileHeight = try container.decode(Int.self, forKey: .tileHeight)
         tileSetReferences = try container.decode([TileSetReference].self, forKey: .tileSets)
         properties = try decode(from: decoder)
+        decodingContext(decoder).level = self
         
         for tileSetReference in tileSetReferences {
             let tileSet = TileSet<Engine>(fromReference: tileSetReference)

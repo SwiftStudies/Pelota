@@ -19,6 +19,37 @@ public class SpriteKit : GameEngine {
     public required init(){
         
     }
+    
+    public func createNode<Engine:GameEngine>(for layer:TileLayer<Engine>, with textureCache:TextureCache<SKTexture>)->SKNode{
+        let level = layer.level
+        
+        let pixelWidth = level.width * level.tileWidth
+        let pixelHeight = level.height * level.tileHeight
+        
+        let allTextures = textureCache
+        
+        let node = SKNode()
+        
+        node.name = String(level.properties["name"])
+        
+        for y in 0..<layer.height {
+            for x in 0..<layer.width {
+                let texture = layer[x,y]
+                guard texture != 0 else {
+                    continue
+                }
+                print(level.engine.textureCache.count," keys")
+                print(level.engine.textureCache.allGids)
+                let spriteNode = SKSpriteNode(texture: (allTextures[texture]))
+                spriteNode.position = CGPoint(x:(x*level.tileWidth+layer.offset.x) - pixelWidth >> 1, y:(-y*level.tileHeight-layer.offset.y) + pixelHeight >> 1)
+                spriteNode.position.x += spriteNode.size.width / 2
+                spriteNode.position.y += (spriteNode.size.height / 2) - CGFloat(level.tileHeight)
+                node.addChild(spriteNode)
+            }
+        }
+        
+        return node
+    }
 }
 
 public final class PhysicsCategory {

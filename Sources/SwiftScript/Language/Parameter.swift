@@ -9,9 +9,7 @@
 import Foundation
 import Pelota
 
-public struct Parameter : Decodable, Symbol {
-    public var runTime: Runtime? = nil
-    
+public struct Parameter : Decodable {
     let identifier : String
     let term       : Term
     
@@ -24,9 +22,8 @@ public struct Parameter : Decodable, Symbol {
         return identifier
     }
 
-    public var type: ScriptType{
-        return require(runTime, or:"No runtime").resolve(term: term)
+    public func resolve(in runtime:Runtime)->ScriptType {
+        return runtime.resolve(term: term)
     }
-    
 }
 

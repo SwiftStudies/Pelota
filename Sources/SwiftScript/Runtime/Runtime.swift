@@ -45,7 +45,8 @@ public extension Runtime {
     func symbols(for parameters:[Parameter])->[Symbol]{
         var results = [Symbol]()
         for parameter in parameters {
-            results.append(symbol(for: parameter.type, with: parameter.name))
+            
+            results.append(symbol(for: parameter.resolve(in: self), with: parameter.name))
         }
         return results
     }

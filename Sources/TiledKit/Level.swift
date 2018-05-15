@@ -9,28 +9,6 @@
 import Foundation
 import Pelota
 
-//public enum GenericContainer<Engine:GameEngine> : LayerContainer {
-//    typealias LayerContainer.Engine = Engine
-//
-//    case    level(level:Level<Engine>),
-//            group(group:GroupLayer<Engine>)
-//    
-//    public var parent: Engine.Container{
-//        switch self{
-//        case .level(let level):
-//            return level
-//        case .group(let group):
-//            return group.layers
-//        }
-//    }
-//    
-//    public var layers: [Layer<Engine>]{
-//        switch self
-//    }
-//    
-//    
-//}
-
 public protocol GameEngine {
     associatedtype Texture   : TextureType
     

@@ -4,7 +4,42 @@
 
 import Foundation
 
-public enum Literal : Equatable, CustomStringConvertible{
+public enum Literal : Equatable, CustomStringConvertible, ExpressibleByStringLiteral, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, ExpressibleByBooleanLiteral, ExpressibleByArrayLiteral{
+    
+    
+    public typealias ArrayLiteralElement = Byte
+    public typealias FloatLiteralType = Float
+    public typealias IntegerLiteralType = Int
+    public typealias StringLiteralType = String
+    public typealias BooleanLiteralType = Bool
+    
+    public init(integerLiteral value: Int) {
+        self = .int(value: value)
+    }
+    
+    public init(floatLiteral value: Float) {
+        self = .float(value: value)
+    }
+    
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value: value)
+    }
+    
+    public init(stringLiteral value: String) {        
+        self = .string(value: value)
+    }
+    
+    public init(arrayLiteral elements: Byte...) {
+        assert(elements.count == 3 || elements.count == 4, "Array should be in the form [r,g,b] or [r,g,b,a]")
+        if elements.count == 3 {
+            self = .color(value: Color(r: elements[0], g: elements[1], b: elements[2]))
+        } else {
+            self = .color(value: Color(r: elements[0], g: elements[1], b: elements[2], a: elements[3]))
+        }
+    }
+
+
+    
     public static func == (lhs: Literal, rhs: Literal) -> Bool {
         switch lhs {
         case string(let lhsValue):

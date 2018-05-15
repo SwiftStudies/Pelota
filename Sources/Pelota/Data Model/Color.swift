@@ -27,6 +27,13 @@ public struct Color : Decodable, Equatable{
         }
     }
     
+    public init(r:Byte, g:Byte, b:Byte, a:Byte = 255){
+        red = r
+        green = g
+        blue = b
+        alpha = a
+    }
+    
     public init(from decoder:Decoder) throws {
         let stringValue = try decoder.singleValueContainer().decode(String.self)
         let colorObject = Color(from: stringValue)

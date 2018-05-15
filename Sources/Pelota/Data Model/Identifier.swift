@@ -6,18 +6,18 @@
 
 import Foundation
 
-struct Identifier : Hashable {
+public struct Identifier : Hashable {
     let stringSource      : String?
     let integerSource     : Int?
     
-    let hashValue         : Int
+    public let hashValue         : Int
     
 }
 
 extension Identifier : ExpressibleByIntegerLiteral {
-    typealias IntegerLiteralType = Int
+    public typealias IntegerLiteralType = Int
     
-    init(integerLiteral value: Int) {
+    public init(integerLiteral value: Int) {
         integerSource = value
         stringSource = nil
         hashValue = "\(value)".hashValue
@@ -25,9 +25,9 @@ extension Identifier : ExpressibleByIntegerLiteral {
 }
 
 extension Identifier : ExpressibleByStringLiteral {
-    typealias StringLiteralType = String
+    public typealias StringLiteralType = String
     
-    init(stringLiteral value: String) {
+    public init(stringLiteral value: String) {
         stringSource = value
         integerSource = nil
         hashValue = value.hashValue
@@ -35,13 +35,13 @@ extension Identifier : ExpressibleByStringLiteral {
 }
 
 extension Identifier : CustomStringConvertible{
-    var description : String {
+    public var description : String {
         return stringSource ?? "\(integerSource!)"
     }
 }
 
 extension Identifier : Codable {
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         if let string = try? container.decode(String.self) {
             self.init(stringLiteral: string)
@@ -50,7 +50,7 @@ extension Identifier : Codable {
         }
     }
     
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         if let string = stringSource {
             try container.encode(string)

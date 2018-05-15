@@ -16,7 +16,7 @@ public class Layer: TiledDecodable, Propertied{
     public let x       : Int
     public let y       : Int
     
-    let parent  : LayerContainer
+    public let parent  : LayerContainer
     
     public var properties = [String : Literal]()
     

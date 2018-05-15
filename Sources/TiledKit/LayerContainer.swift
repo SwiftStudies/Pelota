@@ -46,20 +46,15 @@ extension Layer {
 }
 
 public protocol LayerContainer {
+    var parent : LayerContainer {get}
     var layers : [Layer] {get}
 }
-
-//public protocol LayerContainer {
-//    associatedtype Engine : GameEngine
-////    var parent : Engine.Container {get}
-//    var layers : [Layer<Engine>] {get}
-//}
 
 extension LayerContainer {
 
     var level : Level {
-        if self is Level {
-            return self
+        if let me = self as? Level {
+            return me
         }
         return parent.level
     }
@@ -80,7 +75,7 @@ extension LayerContainer {
     public func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer]{
         var matchingLayers = [Layer]()
         
-        for layer in layers() {
+        for layer in layers {
             var matches = true
             if layer.type == type {
                 if let name = name, layer.name != name{

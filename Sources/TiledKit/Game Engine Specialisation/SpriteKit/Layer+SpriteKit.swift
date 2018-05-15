@@ -10,7 +10,7 @@ import SpriteKit
 
 extension TileLayer {
     public func createNode()->SKNode{
-        return level.createNode(for: self, with: level.engine.textureCache)
+        return SpriteKit.createNode(for: self, with: SpriteKit.textureCache)
     }
 
 }

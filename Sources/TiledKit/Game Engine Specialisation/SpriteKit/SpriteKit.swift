@@ -10,23 +10,21 @@ import SpriteKit
 import Pelota
 
 public class SpriteKit : GameEngine {
+    
     public typealias Texture   = SKTexture
-    public typealias Container = LayerContainer
 
     public let physicsCategories = PhysicsCategory()
-    public var textureCache      = TextureCache<Texture>()
-    
+    public static var textureCache = TextureCache<SKTexture>()
+
     public required init(){
         
     }
     
-    public func createNode<Engine:GameEngine>(for layer:TileLayer<Engine>, with textureCache:TextureCache<SKTexture>)->SKNode{
+    public static func createNode(for layer:TileLayer, with textureCache:TextureCache<SKTexture>)->SKNode{
         let level = layer.level
         
         let pixelWidth = level.width * level.tileWidth
         let pixelHeight = level.height * level.tileHeight
-        
-        let allTextures = textureCache
         
         let node = SKNode()
         
@@ -34,11 +32,13 @@ public class SpriteKit : GameEngine {
         
         for y in 0..<layer.height {
             for x in 0..<layer.width {
-                let texture = layer[x,y]
-                guard texture != 0 else {
+                let textureGid = layer[x,y]
+                guard textureGid != 0 else {
                     continue
                 }
-                let spriteNode = SKSpriteNode(texture: (allTextures[texture]))
+                let texture = textureCache[level.tiles[textureGid]!.identifier]
+
+                let spriteNode = SKSpriteNode(texture: texture)
                 spriteNode.position = CGPoint(x:(x*level.tileWidth+layer.offset.x) - pixelWidth >> 1, y:(-y*level.tileHeight-layer.offset.y) + pixelHeight >> 1)
                 spriteNode.position.x += spriteNode.size.width / 2
                 spriteNode.position.y += (spriteNode.size.height / 2) - CGFloat(level.tileHeight)

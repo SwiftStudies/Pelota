@@ -8,13 +8,21 @@
 
 import Foundation
 import SpriteKit
+import Pelota
 
-struct TileSetReference : Decodable{
-    internal let firstGID    : Int
-    fileprivate let file        : String
+class TileSetReference : Decodable{
+    var identifier : Identifier? = nil
+    let firstGID    : Int
+    let file        : String
+    
+    init(with firstGid:Int, for tileSet:TileSet, in file:String){
+        self.firstGID = firstGid
+        identifier = Identifier(stringLiteral: tileSet.name)
+        self.file = file
+    }
     
     var tileSet : TileSet {
-        return TileSet(fromReference: self)
+        return TileSetCache.tileSet(from: self)
     }
     
     enum CodingKeys : String, CodingKey {
@@ -22,25 +30,26 @@ struct TileSetReference : Decodable{
     }
 }
 
-var tileSetCache = [String : Any]()
-
 public struct TileSet : TiledDecodable{
-    public let tileWidth : Int
-    public let tileHeight : Int
+    public var name : String
+    public var tileWidth : Int
+    public var tileHeight : Int
     public var tiles = [Int:Tile]()
     
     public enum CodingKeys : String, CodingKey {
         case tiles
         case tileWidth = "tilewidth"
         case tileHeight = "tileheight"
+        case name
     }
     
     public class Tile: TiledDecodable, LayerContainer {
-        public let parent : LayerContainer
+        public var identifier : Identifier
+        public var parent : LayerContainer
         public let path    : String
         public let objects : ObjectLayer?
         public var tileSet : TileSet? = nil
-        var layers : [Layer] {
+        public var layers : [Layer] {
             if let objectLayer = objects {
                 return [objectLayer]
             }
@@ -55,8 +64,9 @@ public struct TileSet : TiledDecodable{
             let container = try decoder.container(keyedBy: CodingKeys.self)
             
             path = try container.decode(String.self, forKey: CodingKeys.image)
-            
+            parent = (decoder.userInfo[DecodingContext.key] as! DecodingContext).level!
             objects = try container.decodeIfPresent(ObjectLayer.self, forKey: .objects)
+            identifier = Identifier(stringLiteral: path)
         }
     }
     
@@ -65,6 +75,7 @@ public struct TileSet : TiledDecodable{
         
         tileWidth = try container.decode(Int.self, forKey: .tileWidth)
         tileHeight = try container.decode(Int.self, forKey: .tileHeight)
+        name = try container.decode(String.self, forKey: .name)
         
         //Import to set the level context before decoding tiles as they can contain layers
         let level = Level()
@@ -80,41 +91,27 @@ public struct TileSet : TiledDecodable{
         
     }
     
-    public init(from file:String){
-        if let cachedTileSet = tileSetCache[file]  as? TileSet{
-            self.tiles = cachedTileSet.tiles
-            self.tileHeight = cachedTileSet.tileHeight
-            self.tileWidth = cachedTileSet.tileWidth
-            return
-        }
-        
-        guard let url = Bundle.main.url(forResource: file, withExtension: nil) else {
-            fatalError("Could not find \(file).json in bundle")
-        }
-        
-        guard let data = try? Data(contentsOf: url) else {
-            fatalError("Could not load \(file) into data")
-        }
+    init(from url:URL){
+        let data = Data.withContentsInBundleFirst(url:url)
         
         do {
             let jsonDecoder = JSONDecoder()
             jsonDecoder.userInfo[DecodingContext.key] = DecodingContext(with: [])
             
             let loaded = try jsonDecoder.decode(TileSet.self, from: data)
-            tileSetCache[file] = loaded
             
             self.tiles = loaded.tiles
             self.tileWidth = loaded.tileWidth
             self.tileHeight = loaded.tileHeight
+            self.name = loaded.name
         } catch {
             fatalError("Could not decode JSON \(error)")
         }
     }
     
-    init(fromReference reference:TileSetReference){
-        let source = reference.file
-        let name = NSString(string:source).lastPathComponent
-        
-        self.init(from: name)
+    public init(named name:String, tileWidth:Int, tileHeight:Int){
+        self.name = name
+        self.tileWidth = tileWidth
+        self.tileHeight = tileHeight
     }
 }

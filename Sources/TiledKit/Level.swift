@@ -34,7 +34,7 @@ extension TiledDecodable {
 }
 
 public struct Level : TiledDecodable, LayerContainer, Propertied {
-    var parent : LayerContainer {
+    public var parent : LayerContainer {
         return self
     }
     public var layers      = [Layer]()
@@ -54,7 +54,6 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
         tileWidth = 0
         tileHeight = 0
         tileSetReferences = []
-        engine = Engine()
     }
 
     public init(from decoder:Decoder) throws {
@@ -69,13 +68,12 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
         decodingContext(decoder).level = self
         
         for tileSetReference in tileSetReferences {
-            let tileSet = TileSet(fromReference: tileSetReference)
+            let tileSet = TileSetCache.tileSet(from: tileSetReference)
             tileSets.append(tileSet)
             for (lid,tile) in tileSet.tiles {
                 tiles[tileSetReference.firstGID+lid] = tile
             }
         }
-        cacheTextures()
 
         //Import to set the level context before decoding layers
         layers.append(contentsOf: try Level.decodeLayers(container))
@@ -124,14 +122,6 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
         }
     }
     
-    mutating func cacheTextures(){
-        for tile in tiles {
-            //TODO: Should not have to do this cast but see the issue documented on ```Texture``` protocol declaration
-            textureCache[tile.key] = (Texture.cache(from: tile.value.path))
-        }
-    }
-
-
     enum CodingKeys : String, CodingKey {
         case height, width, layers, properties
         case tileWidth  = "tilewidth"

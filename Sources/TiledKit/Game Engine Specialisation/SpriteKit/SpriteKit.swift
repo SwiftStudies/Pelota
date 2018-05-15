@@ -38,8 +38,6 @@ public class SpriteKit : GameEngine {
                 guard texture != 0 else {
                     continue
                 }
-                print(level.engine.textureCache.count," keys")
-                print(level.engine.textureCache.allGids)
                 let spriteNode = SKSpriteNode(texture: (allTextures[texture]))
                 spriteNode.position = CGPoint(x:(x*level.tileWidth+layer.offset.x) - pixelWidth >> 1, y:(-y*level.tileHeight-layer.offset.y) + pixelHeight >> 1)
                 spriteNode.position.x += spriteNode.size.width / 2

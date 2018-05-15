@@ -2,15 +2,13 @@ import XCTest
 @testable import Pelota
 
 final class PelotaTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(Pelota().text, "Hello, World!")
+
+    func testIntegerLiteralInitialisation(){
+        let literal : Literal = 10
+        XCTAssertEqual(10, literal)
     }
 
-
     static var allTests = [
-        ("testExample", testExample),
+        ("testIntegerLiteralInitialisation", testIntegerLiteralInitialisation),
     ]
 }

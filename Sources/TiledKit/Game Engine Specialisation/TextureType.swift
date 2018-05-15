@@ -9,6 +9,8 @@ import Pelota
 public protocol GameEngine {
     associatedtype Texture : TextureType
     
+    init()
+    
     static var textureCache : TextureCache<Texture> {get set}
 }
 
@@ -43,6 +45,14 @@ public protocol TextureType {
 
 public class TextureCache<Texture:TextureType>{
     private var cache = [Identifier:Texture]()
+    
+    public init(){
+        
+    }
+    
+    public var allIdentifiers : [Identifier] {
+        return cache.map({$0.key})
+    }
     
     public var count : Int {
         return cache.count

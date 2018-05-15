@@ -33,12 +33,11 @@ extension TiledDecodable {
     }
 }
 
-public struct Level : TiledDecodable, LayerContainer, Propertied {
+public class Level : TiledDecodable, LayerContainer, Propertied {
     public var parent : LayerContainer {
         return self
     }
     public var layers      = [Layer]()
-
     public let height      : Int
     public let width       : Int
     public let tileWidth   : Int
@@ -56,7 +55,7 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
         tileSetReferences = []
     }
 
-    public init(from decoder:Decoder) throws {
+    public required init(from decoder:Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         width = try container.decode(Int.self, forKey: .width)
@@ -86,7 +85,7 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
         }
     }
     
-    public init(fromFile file:String, using customObjectTypes:[CustomObject.Type] = []){
+    public init<Engine:GameEngine>(fromFile file:String, using customObjectTypes:[CustomObject.Type] = [], for engine:Engine.Type){
         let url : URL
         
         if let bundleUrl = Bundle.main.url(forResource: file, withExtension: "json") {
@@ -117,6 +116,8 @@ public struct Level : TiledDecodable, LayerContainer, Propertied {
             self.tileSetReferences = loadedLevel.tileSetReferences
             self.tileSets = loadedLevel.tileSets
             self.tiles = loadedLevel.tiles
+            
+            Engine.cacheTextures(from: self)
         } catch {
             fatalError("\(error)")
         }

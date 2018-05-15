@@ -68,6 +68,10 @@ public struct TileSet : TiledDecodable{
             objects = try container.decodeIfPresent(ObjectLayer.self, forKey: .objects)
             identifier = Identifier(stringLiteral: path)
         }
+        
+        func texture<Engine:GameEngine>(for:Engine.Type)->Engine.Texture{
+            return Engine.textureCache[identifier] ?? Engine.texture(self)
+        }
     }
     
     public init(from decoder: Decoder) throws{

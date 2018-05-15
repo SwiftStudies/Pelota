@@ -20,7 +20,7 @@ public class Layer: TiledDecodable, Propertied{
     
     public var properties = [String : Literal]()
     
-    var level : Level {
+    public var level : Level {
         return parent.level
     }
     

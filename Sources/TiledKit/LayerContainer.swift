@@ -45,51 +45,8 @@ extension Layer {
     }
 }
 
-public enum LayerContainerReference<Engine:GameEngine> {
-    case    level(level:Level<Engine>),
-            group(group:GroupLayer<Engine>),
-            tile(tile:TileSet<Engine>.Tile)
-    
-    var group : GroupLayer<Engine>? {
-        if case let .group(group) = self {
-            return group
-        }
-        return nil
-    }
-    
-    var level : Level<Engine>? {
-        switch self {
-        case .level(let level):
-            return level
-        case .group(let group):
-            return group.parent()?.level
-        case .tile(let tile):
-            return tile.parent()?.level
-        }
-    }
-    
-    var tile : TileSet<Engine>.Tile? {
-        if case let .tile(tile) = self {
-            return tile
-        }
-        return nil
-    }
-    
-    var parent : LayerContainerReference<Engine>{
-        switch self {
-        case .level:
-            return self
-        case .tile:
-            return self
-        case .group(let group):
-            return require(group.parent(), or: "This group has no parent")
-        }
-    }
-}
-
 public protocol LayerContainer {
-    func parent<Engine:GameEngine>()->LayerContainerReference<Engine>?
-    func layers<Engine:GameEngine>()->[Layer<Engine>]
+    var layers : [Layer] {get}
 }
 
 //public protocol LayerContainer {
@@ -99,39 +56,31 @@ public protocol LayerContainer {
 //}
 
 extension LayerContainer {
-    public func level<Engine:GameEngine>()->Level<Engine>?{
-        guard let parentContainer : LayerContainerReference<Engine> = parent() else {
-            return nil
+
+    var level : Level {
+        if self is Level {
+            return self
         }
-        
-        switch parentContainer {
-        case .level(let level):
-            return level
-        case .tile:
-            return nil
-        case .group(let group):
-            return group.level
-        }
-        
+        return parent.level
     }
 
     
-    public func getGroups<Engine:GameEngine>(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer<Engine>]{
-        return getLayers(ofType: .group, named: name, matching: conditions, recursively: recursively) as! [GroupLayer<Engine>]
+    public func getGroups(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[GroupLayer]{
+        return getLayers(ofType: .group, named: name, matching: conditions, recursively: recursively) as! [GroupLayer]
     }
 
-    public func getObjectLayers<Engine:GameEngine>(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer<Engine>]{
-        return getLayers(ofType: .object, named: name, matching: conditions, recursively: recursively) as! [ObjectLayer<Engine>]
+    public func getObjectLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[ObjectLayer]{
+        return getLayers(ofType: .object, named: name, matching: conditions, recursively: recursively) as! [ObjectLayer]
     }
 
-    public func getTileLayers<Engine:GameEngine>(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer<Engine>]{
-        return getLayers(ofType: .tile, named: name, matching: conditions, recursively: recursively) as! [TileLayer<Engine>]
+    public func getTileLayers(named name:String? = nil, matching conditions:[String:Literal] = [:], recursively:Bool = false)->[TileLayer]{
+        return getLayers(ofType: .tile, named: name, matching: conditions, recursively: recursively) as! [TileLayer]
     }
     
-    public func getLayers<Engine:GameEngine>(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer<Engine>]{
-        var matchingLayers = [Layer<Engine>]()
+    public func getLayers(ofType type:LayerType, named name:String?, matching conditions:[String:Literal], recursively:Bool)->[Layer]{
+        var matchingLayers = [Layer]()
         
-        for layer : Layer<Engine> in layers() {
+        for layer in layers() {
             var matches = true
             if layer.type == type {
                 if let name = name, layer.name != name{
@@ -166,19 +115,19 @@ extension LayerContainer {
         return matchingLayers
     }
     
-    static func decodeLayers<E:GameEngine>(_ container:KeyedDecodingContainer<Level<E>.CodingKeys>) throws ->[Layer<E>]  {
+    static func decodeLayers(_ container:KeyedDecodingContainer<Level.CodingKeys>) throws ->[Layer]  {
         var typeExposer     = try container.nestedUnkeyedContainer(forKey: Level.CodingKeys.layers)
         var undecodedLayers = try container.nestedUnkeyedContainer(forKey: Level.CodingKeys.layers)
-        var decodedLayers = [Layer<E>]()
+        var decodedLayers = [Layer]()
         while !undecodedLayers.isAtEnd {
             let layerType = try typeExposer.decode(LayerType.self)
             switch layerType {
             case .group:
-                decodedLayers.append(try undecodedLayers.decode(GroupLayer<E>.self))
+                decodedLayers.append(try undecodedLayers.decode(GroupLayer.self))
             case .object:
-                decodedLayers.append(try undecodedLayers.decode(ObjectLayer<E>.self))
+                decodedLayers.append(try undecodedLayers.decode(ObjectLayer.self))
             case .tile:
-                decodedLayers.append(try undecodedLayers.decode(TileLayer<E>.self))
+                decodedLayers.append(try undecodedLayers.decode(TileLayer.self))
             }
         }
         return decodedLayers

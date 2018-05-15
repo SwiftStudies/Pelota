@@ -9,9 +9,9 @@
 import Foundation
 
 public extension Level {
-    public var tileObjectLayers : [Int : ObjectLayer<Engine>] {
+    public var tileObjectLayers : [Int : ObjectLayer] {
         
-        var results = [Int:ObjectLayer<Engine>]()
+        var results = [Int:ObjectLayer]()
         for (gid,tile) in tiles {
             if let objectLayer = tile.objects {
                 results[gid] = objectLayer

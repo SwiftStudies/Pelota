@@ -11,13 +11,13 @@ import Pelota
 
 public protocol CustomObject {
     static var identifier : String { get }
-    init?<Engine:GameEngine>(for object: Object<Engine>)
+    init?(for object: Object)
 }
 
 fileprivate var registeredCustomObjectTypes = [CustomObject.Type]()
 
 enum CustomObjectFactory {
-    static func make<Engine:GameEngine>(for object:Object<Engine>, with customObjectTypes:[CustomObject.Type])->CustomObject? {
+    static func make(for object:Object, with customObjectTypes:[CustomObject.Type])->CustomObject? {
         for type in customObjectTypes {
             if type.identifier == object.rawType ?? "" {
                 return type.init(for: object)
@@ -27,7 +27,7 @@ enum CustomObjectFactory {
     }
 }
 
-public class Object<Engine:GameEngine> : Decodable, Propertied{
+public class Object : TiledDecodable, Propertied{
     internal enum ObjectDecodingError : Error {
         case notMyType      // A specialisation cannot decode
         case unknownType    // No specialisation can decode
@@ -43,11 +43,11 @@ public class Object<Engine:GameEngine> : Decodable, Propertied{
     public let visible     : Bool
     public let x           : Float
     public let y           : Float
-    public let parent      : ObjectLayer<Engine>
+    public let parent      : ObjectLayer
     
     public var properties  = [String:Literal]()
     
-    public var level       : Level<Engine> {
+    public var level       : Level {
         return parent.level 
     }
     
@@ -69,7 +69,7 @@ public class Object<Engine:GameEngine> : Decodable, Propertied{
     }
 }
 
-class PointObject<Engine:GameEngine> : Object<Engine> {
+class PointObject : Object {
     private enum CodingKeys : String, CodingKey {
         case point
     }
@@ -85,7 +85,7 @@ class PointObject<Engine:GameEngine> : Object<Engine> {
     }
 }
 
-public class RectangleObject<Engine:GameEngine> : Object<Engine>{
+public class RectangleObject : Object{
     private enum CodingKeys : String, CodingKey {
         case width, height, rotation
     }
@@ -109,7 +109,7 @@ public class RectangleObject<Engine:GameEngine> : Object<Engine>{
     }
 }
 
-class EllipseObject<Engine:GameEngine> : RectangleObject<Engine>{
+class EllipseObject : RectangleObject{
     private enum CodingKeys : String, CodingKey {
         case ellipse
     }
@@ -125,13 +125,13 @@ class EllipseObject<Engine:GameEngine> : RectangleObject<Engine>{
     }
 }
 
-public class TileObject<Engine:GameEngine> : RectangleObject<Engine>{
+public class TileObject : RectangleObject{
     private enum CodingKeys : String, CodingKey {
         case gid, tile
     }
     
     public let gid : Int
-    public var tile    : TileSet<Engine>.Tile? = nil
+    public var tile    : TileSet.Tile? = nil
     
     public required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -146,7 +146,7 @@ public class TileObject<Engine:GameEngine> : RectangleObject<Engine>{
     }
 }
 
-public class TextObject<Engine:GameEngine> : RectangleObject<Engine>{
+public class TextObject : RectangleObject{
     public struct TextProperties : Decodable{
         public let fontName : String
         public let fontSize : Int
@@ -181,7 +181,7 @@ public class TextObject<Engine:GameEngine> : RectangleObject<Engine>{
 }
 
 
-public class PolygonObject<Engine:GameEngine> : Object<Engine>{
+public class PolygonObject : Object{
     private enum CodingKeys : String, CodingKey {
         case polygon
     }
@@ -201,7 +201,7 @@ public class PolygonObject<Engine:GameEngine> : Object<Engine>{
     }
 }
 
-public class PolylineObject<Engine:GameEngine> : Object<Engine>{
+public class PolylineObject : Object{
     private enum CodingKeys : String, CodingKey {
         case polyline
     }
@@ -222,11 +222,11 @@ public class PolylineObject<Engine:GameEngine> : Object<Engine>{
 }
 
 extension ObjectLayer {
-    func decodeObjects<Engine:GameEngine>(from container: UnkeyedDecodingContainer, in context:DecodingContext<Engine>) throws -> [Object<Engine>] {
+    func decodeObjects(from container: UnkeyedDecodingContainer, in context:DecodingContext) throws -> [Object] {
         var container = container
-        let objectKinds = [PolylineObject<Engine>.self, PolygonObject<Engine>.self, PointObject<Engine>.self, TextObject<Engine>.self, TileObject<Engine>.self, EllipseObject<Engine>.self, RectangleObject<Engine>.self]
+        let objectKinds = [PolylineObject.self, PolygonObject.self, PointObject.self, TextObject.self, TileObject.self, EllipseObject.self, RectangleObject.self]
         
-        var objects = [Object<Engine>]()
+        var objects = [Object]()
 
         ontoNextObject: while !container.isAtEnd {
             for objectKind in objectKinds {
@@ -236,7 +236,7 @@ extension ObjectLayer {
                     continue ontoNextObject
                 } catch let error as DecodingError {
                     throw error
-                } catch _ as Object<Engine>.ObjectDecodingError {
+                } catch _ as Object.ObjectDecodingError {
                     continue
                 }
             }
@@ -248,10 +248,10 @@ extension ObjectLayer {
 }
 
 public extension LayerContainer {
-    func customObjects<T,E:GameEngine>(for engine:E.Type, traverseGroups:Bool = false)->[T]{
+    func customObjects<T>(traverseGroups:Bool = false)->[T]{
         var objects = [T]()
         
-        for layer in getObjectLayers(recursively: traverseGroups) as [ObjectLayer<E>]{
+        for layer in getObjectLayers(recursively: traverseGroups) as [ObjectLayer]{
             objects.append(contentsOf: layer.objects.compactMap({$0.type as? T}))
         }
         

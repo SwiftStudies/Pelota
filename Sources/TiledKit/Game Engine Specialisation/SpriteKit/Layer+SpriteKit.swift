@@ -8,9 +8,9 @@
 #if os(macOS) || os(tvOS) || os(watchOS) || os(iOS)
 import SpriteKit
 
-extension TileLayer where Engine == SpriteKit {
+extension TileLayer {
     public func createNode()->SKNode{
-        return level.engine.createNode(for: self, with: level.engine.textureCache)
+        return level.createNode(for: self, with: level.engine.textureCache)
     }
 
 }

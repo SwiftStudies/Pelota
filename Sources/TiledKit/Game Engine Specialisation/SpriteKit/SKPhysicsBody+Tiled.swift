@@ -7,7 +7,7 @@
 import SpriteKit
 import Pelota
 
-extension SKPhysicsBody{
+public extension SKPhysicsBody{
     
     static func physicsBody(for object:Object, offsetBy offset:CGPoint = CGPoint.zero, tileTexture:SKTexture? = nil)->SKPhysicsBody? {
         var body : SKPhysicsBody? = nil
@@ -43,8 +43,8 @@ extension SKPhysicsBody{
         return body
     }
     
-    public static func create(from object:Object)->SKPhysicsBody?{
-        if let physicsCategory = String(object.properties["category"]) {
+    public static func create(from object:Object, defaultCategory category:String?=nil)->SKPhysicsBody?{
+        if let physicsCategory = String(object["category"]) ?? category{
             let physicsBody = SKPhysicsBody.physicsBody(for: object)
             physicsBody?.categoryBitMask = SpriteKit.instance?.physicsCategories.getMask(for: physicsCategory.split(separator: ",").map({String($0)})) ?? 0
             if let collisionCategory = String(object.properties["collides"]){

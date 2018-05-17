@@ -65,7 +65,7 @@ public class Level : TiledDecodable, LayerContainer, Propertied {
         tileSetReferences = try container.decode([TileSetReference].self, forKey: .tileSets)
         properties = try decode(from: decoder)
         decodingContext(decoder).level = self
-        
+        print("1")
         for tileSetReference in tileSetReferences {
             let tileSet = TileSetCache.tileSet(from: tileSetReference)
             tileSets.append(tileSet)
@@ -103,6 +103,10 @@ public class Level : TiledDecodable, LayerContainer, Propertied {
         }
         
         do {
+            let workingDirectory = FileManager.default.currentDirectoryPath
+            
+            FileManager.default.changeCurrentDirectoryPath(url.deletingLastPathComponent().absoluteURL.path)
+            
             let jsonDecoder = JSONDecoder()
             let decodingContext = DecodingContext(with: customObjectTypes)
             jsonDecoder.userInfo[DecodingContext.key] = decodingContext
@@ -117,10 +121,15 @@ public class Level : TiledDecodable, LayerContainer, Propertied {
             self.tileSets = loadedLevel.tileSets
             self.tiles = loadedLevel.tiles
             
+            
             Engine.cacheTextures(from: self)
+            print("Restoring working directory")
+            FileManager.default.changeCurrentDirectoryPath(workingDirectory)
         } catch {
             fatalError("\(error)")
         }
+        
+        print("Leaving constructor")
     }
     
     enum CodingKeys : String, CodingKey {

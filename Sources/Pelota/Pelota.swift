@@ -17,4 +17,13 @@ public func require<T>(_ optional:T?,or message:String)->T{
 public struct Position : Decodable{
     public let x : Float
     public let y : Float
+    
+    public init(x:Float, y:Float){
+        self.x = x
+        self.y = y
+    }
+    
+    public init(x:Int, y:Int){
+        self.init(x: Float(x), y: Float(y))
+    }
 }

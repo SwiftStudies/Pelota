@@ -9,15 +9,37 @@
 import SpriteKit
 import Pelota
 
+// This is horrible. Needs a better solution
+fileprivate var spriteKitInstance : SpriteKit? = nil
+
 public class SpriteKit : GameEngine {
     
     public typealias Texture   = SKTexture
 
-    public let physicsCategories = PhysicsCategory()
+    let physicsCategories = PhysicsCategory()
     public static var textureCache = TextureCache<SKTexture>()
 
     public required init(){
+        spriteKitInstance = self
+    }
+    
+    public init(for level:Level){
+        spriteKitInstance = self
         
+        for layer in level.getObjectLayers(recursively: true){
+            
+            for categories in layer.objects.compactMap({String($0.properties["category"])}){
+                for category in categories.split(separator: ",").map({$0.trimmingCharacters(in: CharacterSet.whitespaces)}){
+                    spriteKitInstance?.physicsCategories.getCategory(for: category)
+                }
+            }
+        }
+        
+        print("Done!")
+    }
+    
+    public static var instance : SpriteKit? {
+        return spriteKitInstance
     }
     
     public static func createNode(for layer:TileLayer, with textureCache:TextureCache<SKTexture>)->SKNode{
@@ -57,6 +79,7 @@ public final class PhysicsCategory {
         
     }
     
+    @discardableResult
     public func getCategory(`for` name:String)->UInt32{
         if let existingCategory = physicsBodyCategories[name] {
             return existingCategory

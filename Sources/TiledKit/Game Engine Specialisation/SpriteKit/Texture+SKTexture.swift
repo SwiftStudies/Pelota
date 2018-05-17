@@ -24,5 +24,9 @@ extension SKTexture : TextureType {
         return texture
     }
     
+    public func subTexture(at: (x: Int, y: Int), with dimensions: (width: Int, height: Int)) -> TextureType {
+        return SKTexture(rect: CGRect(x: at.x, y: at.y, width: dimensions.width, height: dimensions.height), in: self)
+    }
+    
 }
 #endif

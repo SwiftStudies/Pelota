@@ -48,7 +48,7 @@ let package = Package(
             dependencies: ["TiledKit"]),
         .target(
             name: "xtiled",
-            dependencies: []),
+            dependencies: ["OysterKit","Pelota","TiledKit","SwiftScript"]),
         .testTarget(
             name: "xtiledTests",
             dependencies: ["xtiled"]),

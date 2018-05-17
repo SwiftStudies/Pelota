@@ -5,6 +5,7 @@
 //
 
 import Pelota
+import Foundation
 
 public protocol GameEngine {
     associatedtype Texture : TextureType
@@ -35,6 +36,14 @@ extension GameEngine {
             if let alreadyCachedTexture = texture(Identifier(stringLiteral: sheet.imagePath)){
                 cachedTexture = alreadyCachedTexture
             } else {
+                let current = FileManager.default.currentDirectoryPath
+                
+                
+                
+                defer { FileManager.default.changeCurrentDirectoryPath(current) }
+                
+                FileManager.default.changeCurrentDirectoryPath(URL(fileURLWithPath: sheet.imagePath).absoluteURL.deletingLastPathComponent().path)
+                
                 cachedTexture = Texture.cache(from: sheet.imagePath) as! Texture
                 Self.textureCache[Identifier(stringLiteral:sheet.imagePath)] = cachedTexture
             }
@@ -44,6 +53,10 @@ extension GameEngine {
             loadedTexture = cachedTexture.subTexture(at: (Int(position.x), Int(position.y)), with: (width:tileSet.tileWidth, height: tileSet.tileHeight)) as! Texture
 
         } else if let path = tile.path {
+            let current = FileManager.default.currentDirectoryPath
+            defer { FileManager.default.changeCurrentDirectoryPath(current) }
+            FileManager.default.changeCurrentDirectoryPath(URL(fileURLWithPath: path).absoluteURL.deletingLastPathComponent().path)
+
             loadedTexture = (Texture.cache(from: path) as! Texture)
         } else {
             fatalError("Tile has no path and is not in a sheet")

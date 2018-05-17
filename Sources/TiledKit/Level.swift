@@ -65,7 +65,7 @@ public class Level : TiledDecodable, LayerContainer, Propertied {
         tileSetReferences = try container.decode([TileSetReference].self, forKey: .tileSets)
         properties = try decode(from: decoder)
         decodingContext(decoder).level = self
-        print("1")
+        
         for tileSetReference in tileSetReferences {
             let tileSet = TileSetCache.tileSet(from: tileSetReference)
             tileSets.append(tileSet)

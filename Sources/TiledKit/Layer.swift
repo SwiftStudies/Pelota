@@ -50,6 +50,37 @@ public class Layer: TiledDecodable, Propertied{
     }
 }
 
+public extension Layer {
+    public subscript(_ property:String)->Literal?{
+        return self[property, defaultingTo:nil]
+    }
+    
+    public subscript(_ property:String, defaultingTo defaultValue:Literal?)->Literal?{
+        if let onSelf = properties[property]{
+            return onSelf
+        }
+        return parent[property, defaultingTo:defaultValue]
+    }
+}
+
+public extension LayerContainer{
+    public subscript(_ property:String)->Literal?{
+        return self[property, defaultingTo:nil]
+    }
+    
+    public subscript(_ property:String, defaultingTo defaultValue:Literal?)->Literal?{
+        if let propertiedSelf = self as? Propertied, let onSelf = propertiedSelf.properties[property]{
+            return onSelf
+        }
+        
+        if !(self is Level){
+            return parent[property, defaultingTo: defaultValue]
+        }
+        
+        return nil
+    }
+}
+
 public class TileLayer : Layer{
     public let width : Int
     public let height : Int

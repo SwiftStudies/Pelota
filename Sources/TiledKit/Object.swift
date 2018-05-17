@@ -69,6 +69,19 @@ public class Object : TiledDecodable, Propertied{
     }
 }
 
+public extension Object {
+    public subscript(_ property:String)->Literal?{
+        return self[property, defaultingTo:nil]
+    }
+    
+    public subscript(_ property:String, defaultingTo defaultValue:Literal?)->Literal?{
+        if let onSelf = properties[property]{
+            return onSelf
+        }
+        return parent[property, defaultingTo:defaultValue]
+    }
+}
+
 class PointObject : Object {
     private enum CodingKeys : String, CodingKey {
         case point

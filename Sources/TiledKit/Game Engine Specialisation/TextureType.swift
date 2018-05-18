@@ -50,7 +50,7 @@ extension GameEngine {
             
             let position = require(tile.position, or: "Sheet based tile has no position")
             
-            loadedTexture = cachedTexture.subTexture(at: (Int(position.x), Int(position.y)), with: (width:tileSet.tileWidth, height: tileSet.tileHeight)) as! Texture
+            loadedTexture = cachedTexture.subTexture(at: (Int(position.x), Int(position.y)), with: (width:tileSet.tileWidth, height: tileSet.tileHeight), from:sheet) as! Texture
 
         } else if let path = tile.path {
             let current = FileManager.default.currentDirectoryPath
@@ -79,7 +79,7 @@ public protocol TextureType {
     //TODO: This should return Self, but then non-final conforming classes are required to return
     //Self... which they can't do
     static func cache(from path:String)->TextureType
-    func subTexture(at:(x:Int,y:Int), with dimensions:(width:Int, height:Int))->TextureType
+    func subTexture(at:(x:Int,y:Int), with dimensions:(width:Int, height:Int), from sheet:TileSheet)->TextureType
 }
 
 public class TextureCache<Texture:TextureType>{

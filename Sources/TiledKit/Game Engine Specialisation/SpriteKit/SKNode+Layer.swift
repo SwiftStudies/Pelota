@@ -44,6 +44,8 @@ public extension SKNode{
             }
         }
         
+        self.position = CGPoint(x:pixelWidth  / 2,y:pixelHeight / 2)
+        
     }
     
     convenience public init(from groupLayer:GroupLayer, withTexturesIn textureCache:TextureCache<SKTexture> = SpriteKit.textureCache){

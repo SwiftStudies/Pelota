@@ -123,13 +123,10 @@ public class Level : TiledDecodable, LayerContainer, Propertied {
             
             
             Engine.cacheTextures(from: self)
-            print("Restoring working directory")
             FileManager.default.changeCurrentDirectoryPath(workingDirectory)
         } catch {
             fatalError("\(error)")
         }
-        
-        print("Leaving constructor")
     }
     
     enum CodingKeys : String, CodingKey {

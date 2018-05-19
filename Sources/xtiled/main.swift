@@ -60,6 +60,7 @@ class AppDelegate : NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         let scene = SKScene(size: CGSize(width: 320, height: 256))
         
+
         for layer in level.layers {
             if let groupLayer = layer as? GroupLayer {
                 scene.addChild(SKNode(from: groupLayer))
@@ -72,6 +73,12 @@ class AppDelegate : NSObject, NSApplicationDelegate, NSWindowDelegate {
         
         window.delegate = self
         window.contentView = skView
+        
+        // Ensure the aspect ratio is respected by the scene in the view
+        scene.scaleMode = .aspectFit
+        // And that the resize increments don't cause odd rounding for tile sheets
+        window.resizeIncrements = CGSize(width: level.tileWidth, height: level.tileHeight)
+        
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
         window.makeKey()

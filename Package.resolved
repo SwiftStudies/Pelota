@@ -5,8 +5,17 @@
         "package": "OysterKit",
         "repositoryURL": "https://github.com/SwiftStudies/OysterKit.git",
         "state": {
-          "branch": null,
+          "branch": "master",
           "revision": "6f48458b746a44cbfd1bef5ad69b233fa5ec7325",
+          "version": null
+        }
+      },
+      {
+        "package": "TerminalKit",
+        "repositoryURL": "https://github.com/SwiftStudies/TerminalKit.git",
+        "state": {
+          "branch": "master",
+          "revision": "ecb124a4de83d338abeb5bc11b8ea71dbe2ac993",
           "version": null
         }
       }

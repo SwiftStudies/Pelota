@@ -21,7 +21,7 @@ extension GameEngine {
     }
     
     @discardableResult
-    static func texture(_ tile:TileSet.Tile)->Texture{
+    public static func texture(_ tile:TileSet.Tile)->Texture{
         if let cached = Self.textureCache[tile.identifier]{
             return cached
         }

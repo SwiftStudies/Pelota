@@ -169,7 +169,7 @@ public struct TileSet : TiledDecodable{
     }
     
     
-    init(from url:URL){
+    public init(from url:URL){
         let data = Data.withContentsInBundleFirst(url:url)
         
         do {

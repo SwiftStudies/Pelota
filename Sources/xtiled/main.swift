@@ -15,15 +15,17 @@ var availableCommands = [Command]()
 
 #if os(macOS)
 availableCommands.append(
-    BlockCommand(name: "test",
-                 description: "Tests the specified level",
-                 options: [],
-                 parameters: [
-                    StandardParameter.init("filename", Specification.string(Required.one))
-                ]){ (options, parameters) -> ExitCode in        
-                    launchMacApp(with: AppDelegate(test: parameters["filename"]![0]))
-                    return ExitCode.success
-                }
+    BlockCommand(   name: "test",
+                    description: "Tests the specified level",
+                    options: [
+                        Flag("full-screen",shortForm:"fs",description: "Run the test in full screen mode")
+                    ],
+                    parameters: [
+                        StandardParameter.init("filename", Specification.string(Required.one))
+                    ]){ (options, parameters) -> ExitCode in
+                        launchMacApp(with: AppDelegate(test: parameters["filename"]![0]))
+                        return ExitCode.success
+                    }
 )
 #endif
 
